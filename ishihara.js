@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
     x = e.pageX - this.offsetLeft;
     y = e.pageY - this.offsetTop;
 
+    if (generating) return;
+
     ctx.beginPath();
     ctx.fillStyle = e.ctrlKey ? '#FFF' : '#000';
     ctx.arc(x, y, 7.25, 0, 2 * Math.PI);
@@ -55,6 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     x = e.pageX - this.offsetLeft;
     y = e.pageY - this.offsetTop;
+
+    if (generating) return;
 
     ctx.beginPath();
     ctx.fillStyle = e.ctrlKey ? '#FFF' : '#000';
