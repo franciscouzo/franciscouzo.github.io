@@ -109,6 +109,13 @@ document.addEventListener('DOMContentLoaded', function() {
     generating = false;
   });
 
+  clear_button.addEventListener('click', function() {
+    if (!generating) {
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  });
+
   generate_button.addEventListener('click', function() {
     if (generating) {
       return;
