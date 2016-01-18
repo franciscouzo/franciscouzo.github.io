@@ -61,11 +61,15 @@ document.addEventListener('DOMContentLoaded', function() {
       var img = new Image();
       img.src = event.target.result;
       img.onload = function() {
-        var ratio = Math.min(max_width / img.width, max_height / img.height);
-        canvas.width  = img.width  * ratio;
-        canvas.height = img.height * ratio;
-        //canvas.width = img.width;
-        //canvas.height = img.height;
+        var resize = document.getElementById('resize_checkbox').checked;
+        if (resize) {
+          var ratio = Math.min(max_width / img.width, max_height / img.height);
+          canvas.width  = img.width  * ratio;
+          canvas.height = img.height * ratio;
+        } else {
+          canvas.width = img.width;
+          canvas.height = img.height;
+        }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       }
     }
@@ -83,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
     generating = true;
 
     var circular_area = document.getElementById('circular_checkbox').checked;
-    console.log(circular_area)
 
     var img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
