@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   var image_upload = document.getElementById('image_upload');
   var generate_button = document.getElementById('generate_button');
+  var stop_button = document.getElementById('stop_button');
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
@@ -70,12 +71,18 @@ document.addEventListener('DOMContentLoaded', function() {
     reader.readAsDataURL(e.target.files[0]);
   }, false);
 
-  //var img_data
+  stop_button.addEventListener('click', function() {
+    generating = false;
+  });
+
   generate_button.addEventListener('click', function() {
     if (generating) {
       return;
     }
     generating = true;
+
+    var circular_area = document.getElementById('circular_checkbox').checked;
+    console.log(circular_area)
 
     var img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
@@ -84,12 +91,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var min_radius = (canvas.width + canvas.height) / 600;
     var max_radius = (canvas.width + canvas.height) / 150;
 
-    var generate_circle = function() {
+    var generate_circle = function(circular_area) {
       var radius = min_radius + Math.random() * (max_radius - min_radius);
-      var angle = Math.random() * 2 * Math.PI;
-      var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
-      var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
-      var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
+
+      if (circular_area) {
+        var angle = Math.random() * 2 * Math.PI;
+        var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
+        var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
+        var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
+      } else {
+        var x = radius + Math.random() * (canvas.width  - radius * 2);
+        var y = radius + Math.random() * (canvas.height - radius * 2);
+      }
 
       return {x: x, y: y, radius: radius};
     }
@@ -112,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var g = img_data.data[index + 1];
         var b = img_data.data[index + 2];
         var a = img_data.data[index + 3];
-        
+
         if ((r + g + b) * (a / 255) < 127) {
           return true;
         }
@@ -150,8 +163,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }, ['x', 'y']);
 
     var step_n = 0;
+    var area = canvas.width * canvas.height;
+    if (circular_area) {
+      var steps = area / 150;
+    } else {
+      var steps = area / 50;
+    }
     var step = function() {
-      while (step_n < 3000) {
+      if (!generating) {
+        return
+      }
+      while (step_n < steps) {
         var tries = 0;
 
         while (true) {
@@ -161,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
             requestAnimationFrame(step);
             return;
           }
-          var circle = generate_circle();
+          var circle = generate_circle(circular_area);
           var nearest = tree.nearest(circle, 8);
 
           var intersects = false;
