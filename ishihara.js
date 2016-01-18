@@ -43,12 +43,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     x = e.pageX - this.offsetLeft;
     y = e.pageY - this.offsetTop;
+
+    ctx.beginPath();
+    ctx.fillStyle = e.ctrlKey ? '#FFF' : '#000';
+    ctx.arc(x, y, 7.25, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.closePath();
   });
   canvas.addEventListener('mouseup', function(e) {
     painting = false;
 
     x = e.pageX - this.offsetLeft;
     y = e.pageY - this.offsetTop;
+
+    ctx.beginPath();
+    ctx.fillStyle = e.ctrlKey ? '#FFF' : '#000';
+    ctx.arc(x, y, 7.25, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.closePath();
   });
   canvas.addEventListener('mousemove', function(e) {
     if (!painting || generating) return;
@@ -64,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     ctx.beginPath();
     ctx.fillStyle = e.ctrlKey ? '#FFF' : '#000';
-    ctx.arc(curr_x, curr_y, 7.25, 0, 2 * Math.PI);
     ctx.arc(x, y, 7.25, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
