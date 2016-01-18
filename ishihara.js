@@ -17,9 +17,21 @@ document.addEventListener('DOMContentLoaded', function() {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  var colors_on = [
+    ['#F9BB82', '#EBA170', '#FCCD84'],
+    ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674'],
+    ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674', '#FECB05']
+  ];
+  var colors_off =  [
+    ['#9CA594', '#ACB4A5', '#BBB964', '#D7DAAA', '#E5D57D', '#D1D6AF'],
+    ['#F49427', '#C9785D', '#E88C6A', '#F1B081'],
+    ['#F49427', '#C9785D', '#E88C6A', '#F1B081', '#FFCE00']
+  ];
+
   var painting = false;
   var generating = false;
   var x, y;
+
   canvas.addEventListener('mousedown', function(e) {
     painting = true;
 
@@ -88,6 +100,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var circular_area = document.getElementById('circular_checkbox').checked;
 
+    var draw_style;
+    var radios = document.getElementsByName('color_style');
+
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) {
+        draw_style = radios[i].value;
+      }
+    }
+
     var img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -143,18 +164,13 @@ document.addEventListener('DOMContentLoaded', function() {
              Math.pow(circle1.radius + circle2.radius, 2)
     }
 
-    var draw_circle = function(circle) {
+    var draw_circle = function(circle, color_on, color_off) {
       ctx.beginPath();
 
       if (overlaps_image(circle)) {
-        ctx.fillStyle = [
-          '#F9BB82', '#EBA170', '#FCCD84'
-        ][Math.floor(Math.random() * 3)];
+        ctx.fillStyle = color_on[Math.floor(Math.random() * color_on.length)];
       } else {
-        ctx.fillStyle = [
-          '#9CA594', '#ACB4A5', '#BBB964',
-          '#D7DAAA', '#E5D57D', '#D1D6AF'
-        ][Math.floor(Math.random() * 6)];
+        ctx.fillStyle = color_off[Math.floor(Math.random() * color_off.length)];
       }
 
       ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
@@ -168,11 +184,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var step_n = 0;
     var area = canvas.width * canvas.height;
+
     if (circular_area) {
       var steps = area / 150;
     } else {
       var steps = area / 50;
     }
+
     var step = function() {
       if (!generating) {
         return
@@ -203,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           if (!intersects) {
             step_n++;
-            draw_circle(circle);
+            draw_circle(circle, colors_on[draw_style], colors_off[draw_style]);
             tree.insert(circle);
             if (step_n % 50 == 0) {
               requestAnimationFrame(step);
