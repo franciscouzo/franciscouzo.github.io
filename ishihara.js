@@ -20,12 +20,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var colors_on = [
     ['#F9BB82', '#EBA170', '#FCCD84'],
     ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674'],
-    ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674', '#FECB05']
+    ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674', '#FECB05'],
+    ['#E96B6C', '#F7989C'],
+    ['#AD5277', '#F7989C'],
+    ['#FF934F']
   ];
   var colors_off =  [
     ['#9CA594', '#ACB4A5', '#BBB964', '#D7DAAA', '#E5D57D', '#D1D6AF'],
     ['#F49427', '#C9785D', '#E88C6A', '#F1B081'],
-    ['#F49427', '#C9785D', '#E88C6A', '#F1B081', '#FFCE00']
+    ['#F49427', '#C9785D', '#E88C6A', '#F1B081', '#FFCE00'],
+    ['#635A4A', '#817865', '#9C9C84'],
+    ['#635A4A', '#817865', '#9C9C84'],
+    ['#9C9C9C']
   ];
 
   var painting = false;
@@ -99,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     generating = true;
 
     var circular_area = document.getElementById('circular_checkbox').checked;
+    var invert_colors = document.getElementById('invert_checkbox').checked;
 
     var draw_style;
     var radios = document.getElementsByName('color_style');
@@ -221,7 +228,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
           if (!intersects) {
             step_n++;
-            draw_circle(circle, colors_on[draw_style], colors_off[draw_style]);
+            if (invert_colors) {
+              draw_circle(circle, colors_off[draw_style], colors_on[draw_style]);
+            } else {
+              draw_circle(circle, colors_on[draw_style], colors_off[draw_style]);
+            }
             tree.insert(circle);
             if (step_n % 50 == 0) {
               requestAnimationFrame(step);
