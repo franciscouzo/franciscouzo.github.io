@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <title>Ishihara Plate Generator</title>
+        <style>
+            html, body {
+                width:  100%;
+                height: 100%;
+                margin: 0px;
+            }
+            table {
+                position: absolute;
+                right: 0px;
+                top: 10px;
+            }
+        </style>
+        <script src="kdTree.js"></script>
+        <script src="ishihara.js"></script>
+    </head>
+    <body>
+        <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
+        <table>
+            <tr>
+                <td>
+                    <input type="file" id="image_upload"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="generate_button" value="Generate">Generate</button>
+                </td>
+            </tr>
+        <table>
+    </body>
+</html>
