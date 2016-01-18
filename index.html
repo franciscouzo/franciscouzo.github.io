@@ -7,6 +7,11 @@
                 height: 100%;
                 margin: 0px;
             }
+            #help {
+                position: absolute;
+                left: 0px;
+                top: 10px;
+            }
             table {
                 position: absolute;
                 right: 0px;
@@ -17,16 +22,29 @@
         <script src="ishihara.js"></script>
     </head>
     <body>
-        <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
+        <center>
+            <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
+        </center>
+        <small id="help">
+            Draw with your mouse <small>(ctrl to delete)</small><br>
+            Or load a image to convert <small>(white and black works best)</small>
+        </small>
         <table>
             <tr>
                 <td>
-                    <input type="file" id="image_upload"/>
+                    <input type="file" id="image_upload" accept="image/*"/>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <button id="generate_button" value="Generate">Generate</button>
+                    <small>Circular</small>
+                    <input id="circular_checkbox" type="checkbox" checked/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="generate_button">Generate</button>
+                    <button id="stop_button">Stop</button>
                 </td>
             </tr>
         <table>
