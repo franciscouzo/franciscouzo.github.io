@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var tree = new kdTree([], function(a, b) {
-      return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2);
+      return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
     }, ['x', 'y']);
 
     var step_n = 0;
