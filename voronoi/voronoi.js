@@ -140,6 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //ctx.putImageData(laplace_convolution, 0, 0);
 
+    var average_radius = document.getElementById('color_average_radius').value;
+    average_radius = parseFloat(average_radius) || 1.5
+    average_radius = Math.max(average_radius, 0);
+    average_radius = Math.min(average_radius, 100);
+
     var points = [];
 
     for (var x = 0; x < canvas.width; x++) {
@@ -152,7 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var ratio = (r * 0.3 + g * 0.6 + b * 0.1) / 256;
 
         if (Math.random() < Math.pow(ratio, 2) || Math.random() < 1 / 1000) {
-          points.push({x: x, y: y, color: color_average(img_data, x, y, 1.5)});
+          var color = color_average(img_data, x, y, average_radius);
+          points.push({x: x, y: y, color: color});
         }
       }
     }
