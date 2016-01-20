@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var speed = 10;
 
   document.addEventListener('keypress', function (e) {
-    if (e.keyCode == 32) { // space
+    if (e.keyCode == 32 || e.key == ' ') { // space
       if (random_walks.length >= 10000) {
         return;
       }
@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         random_walks.push([x, y]);
       }
-    } else if (e.keyCode == 43) { // plus
+    } else if (e.keyCode == 43 || e.key == '+') { // plus
       speed++;
       speed = Math.min(speed, 100);
-    } else if (e.keyCode == 45) { // minus
+    } else if (e.keyCode == 45 || e.key == '-') { // minus
       speed--;
       speed = Math.max(speed, 1);
     }
