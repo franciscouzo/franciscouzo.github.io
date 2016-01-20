@@ -15,10 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (random_walks.length >= 1000) {
         return;
       }
-      var x = Math.random() * canvas.width;
-      var y = Math.random() * canvas.height;
 
-      random_walks.push([x, y]);
+      var add_n = Math.ceil(Math.log(random_walks.length, 10) * 2);
+      for (var i = 0; i < add_n; i++) {
+        var x = Math.random() * canvas.width;
+        var y = Math.random() * canvas.height;
+
+        random_walks.push([x, y]);
+      }
     } else if (e.keyCode == 43) { // plus
       speed++;
       speed = Math.min(speed, 100);
