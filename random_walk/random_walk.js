@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('keypress', function (e) {
     if (e.keyCode == 32) { // space
-      if (random_walks.length >= 1000) {
+      if (random_walks.length >= 10000) {
         return;
       }
 
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   canvas.addEventListener('mousedown', function(e) {
-    if (random_walks.length >= 1000) {
+    if (random_walks.length >= 10000) {
       return;
     }
     var x = e.pageX - this.offsetLeft;
