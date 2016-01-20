@@ -241,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
           for (var j = 0; j < nearest.length; j++) {
             var near_circle = nearest[j][0];
-            var distance = nearest[j][1];
             if (circle_intersection(circle, near_circle)) {
               intersects = true;
               break;
