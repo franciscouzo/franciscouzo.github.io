@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <title>Voronoi Images</title>
+        <style>
+            html, body {
+                width:  100%;
+                height: 100%;
+                margin: 0px;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            table {
+                position: absolute;
+                right: 0px;
+                top: 10px;
+            }
+        </style>
+        <script src="/kdTree.js"></script>
+        <script src="voronoi.js"></script>
+    </head>
+    <body>
+        <center>
+            <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
+        </center>
+        <table>
+            <tr>
+                <td>
+                    <input type="file" id="image_upload" accept="image/*"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input name="distance_metric" value="euclidean" type="radio" checked><small>Euclidean</small></input>
+                    <input name="distance_metric" value="manhattan" type="radio"><small>Manhattan</small></input>
+                    <input name="distance_metric" value="minkowski" type="radio"><small>Minkowski<sub>3</sub></small></input>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="resize_checkbox" type="checkbox" checked><small>Resize</small></input>
+                    <button id="generate_button">Generate</button>
+                </td>
+            </tr>
+        <table>
+    </body>
+</html>
