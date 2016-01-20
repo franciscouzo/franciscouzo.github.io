@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var g = 0;
       var b = 0;
 
+      var count = 0;
+
       for (var i = 0; i < points_x.length; i++) {
         x = points_x[i];
         y = points_y[i];
@@ -113,6 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
           continue;
         }
 
+        count++
+
         var index = (Math.floor(y) * width + Math.floor(x)) * 4;
 
         r += data[index];
@@ -120,9 +124,9 @@ document.addEventListener('DOMContentLoaded', function() {
         b += data[index + 2];
       }
 
-      r = Math.floor(r / points_x.length);
-      g = Math.floor(g / points_x.length);
-      b = Math.floor(b / points_x.length);
+      r = Math.floor(r / count);
+      g = Math.floor(g / count);
+      b = Math.floor(b / count);
 
       return [r, g, b];
     }
