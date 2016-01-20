@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
     //ctx.putImageData(laplace_convolution, 0, 0);
 
     var average_radius = document.getElementById('color_average_radius').value;
-    average_radius = parseFloat(average_radius) || 1.5
+    average_radius = parseFloat(average_radius) || 1.5;
     average_radius = Math.max(average_radius, 0);
     average_radius = Math.min(average_radius, 100);
 
