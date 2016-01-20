@@ -145,6 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
     average_radius = Math.max(average_radius, 0);
     average_radius = Math.min(average_radius, 100);
 
+    var point_chance = document.getElementById('point_chance').value;
+    point_chance = parseFloat(point_chance) || 1000;
+    point_chance = Math.max(point_chance, 50);
+
+    console.log(point_chance);
+
     var points = [];
 
     for (var x = 0; x < canvas.width; x++) {
@@ -156,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var ratio = (r * 0.3 + g * 0.6 + b * 0.1) / 256;
 
-        if (Math.random() < Math.pow(ratio, 2) || Math.random() < 1 / 1000) {
+        if (Math.random() < Math.pow(ratio, point_chance / 500) || Math.random() < 1 / point_chance) {
           var color = color_average(img_data, x, y, average_radius);
           points.push({x: x, y: y, color: color});
         }
