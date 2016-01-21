@@ -179,6 +179,10 @@ document.addEventListener('DOMContentLoaded', function() {
       minkowski: function(a, b) {
         var p = 3;
         return Math.pow(Math.pow(Math.abs(a.x - b.x), p) + Math.pow(Math.abs(a.y - b.y), p), 2/p);
+      },
+      random: function(a, b) {
+        return Math.random() * Math.abs(a.x - b.x) +
+               Math.random() * Math.abs(a.y - b.y);
       }
     };
 
