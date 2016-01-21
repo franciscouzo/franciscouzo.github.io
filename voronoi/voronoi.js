@@ -149,7 +149,20 @@ document.addEventListener('DOMContentLoaded', function() {
     point_chance = parseFloat(point_chance) || 1000;
     point_chance = Math.max(point_chance, 50);
 
-    console.log(point_chance);
+    var place_point_funcs = {
+      random: function(x, y) {
+        return Math.random() < Math.pow(ratio, point_chance / 500) || Math.random() < 1 / point_chance;
+      },
+      hexagon: function(x, y) {
+        return (y % Math.floor(point_chance / 20) == 0 &&
+                x % Math.floor(point_chance / 30) == 0) ||
+               (y % Math.floor(point_chance / 20) == Math.floor(point_chance / 40) &&
+                x % Math.floor(point_chance / 30) == Math.floor(point_chance / 60));
+      }
+    };
+
+    var selects = document.getElementById('place_point_func');
+    var place_point_func = place_point_funcs[selects.options[selects.selectedIndex].value];
 
     var points = [];
 
@@ -162,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var ratio = (r * 0.3 + g * 0.6 + b * 0.1) / 256;
 
-        if (Math.random() < Math.pow(ratio, point_chance / 500) || Math.random() < 1 / point_chance) {
+        if (place_point_func(x, y)) {
           var color = color_average(img_data, x, y, average_radius);
           points.push({x: x, y: y, color: color});
         }
