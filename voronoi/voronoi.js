@@ -161,8 +161,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
 
-    var selects = document.getElementById('place_point_func');
-    var place_point_func = place_point_funcs[selects.options[selects.selectedIndex].value];
+    var select = document.getElementById('place_point_func');
+    var place_point_func = place_point_funcs[select.value];
 
     var points = [];
 
@@ -207,8 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
 
-    var selects = document.getElementById('distance_metric');
-    var distance = distances[selects.options[selects.selectedIndex].value];
+    var select = document.getElementById('distance_metric');
+    var distance = distances[select.value];
 
     var tree = new kdTree(points, distance, ['x', 'y']);
 
