@@ -186,6 +186,11 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       constant: function(a, b) {
         return 0;
+      },
+      mosaic: function(a, b) {
+        var x = Math.abs(a.x - b.x);
+        var y = Math.abs(a.y - b.y);
+        return Math.sin(x + y) * 10 + (x + y);
       }
     };
 
