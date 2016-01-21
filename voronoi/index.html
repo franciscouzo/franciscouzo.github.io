@@ -37,20 +37,18 @@
             </tr>
             <tr>
                 <td>
-                    <input name="distance_metric" value="euclidean" type="radio" checked><small>Euclidean</small></input>
-                    <input name="distance_metric" value="manhattan" type="radio"><small>Manhattan</small></input>
-                    <input name="distance_metric" value="minkowski" type="radio"><small>Minkowski<sub>3</sub></small></input>
+                    <select id="distance_metric">
+                        <option value="euclidean">Euclidean</option>
+                        <option value="manhattan">Manhattan</option>
+                        <option value="minkowski"><small>Minkowski<sub>3</sub></small></option>
+                        <option value="random">Random</option>
+                        <option value="constant">Constant</option>
+                        <option value="mosaic">Mosaic</option>
+                    </select>
                     <select id="place_point_func">
                         <option value="random">Random</option>
                         <option value="hexagon">Hexagon</option>
                     </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input name="distance_metric" value="random" type="radio"><small>Random</small></input>
-                    <input name="distance_metric" value="constant" type="radio"><small>Constant</small></input>
-                    <input name="distance_metric" value="mosaic" type="radio"><small>Mosaic</small></input>
                 </td>
             </tr>
             <tr>

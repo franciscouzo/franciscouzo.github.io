@@ -207,15 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
 
-    var distance;
-    var radios = document.getElementsByName('distance_metric');
-
-    for (var i = 0; i < radios.length; i++) {
-      if (radios[i].checked) {
-        console.log(radios[i].value);
-        distance = distances[radios[i].value];
-      }
-    }
+    var selects = document.getElementById('distance_metric');
+    var distance = distances[selects.options[selects.selectedIndex].value];
 
     var tree = new kdTree(points, distance, ['x', 'y']);
 
