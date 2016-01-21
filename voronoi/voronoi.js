@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
           continue;
         }
 
-        count++
+        count++;
 
         var index = (Math.floor(y) * width + Math.floor(x)) * 4;
 
