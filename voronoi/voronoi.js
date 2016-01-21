@@ -209,11 +209,18 @@ document.addEventListener('DOMContentLoaded', function() {
     var chunk_img_data = chunk_ctx.createImageData(chunk_width, chunk_height);
 
     var step = function() {
-      var max_x = Math.min((chunk_x + 1) * chunk_width,  canvas.width);
-      var max_y = Math.min((chunk_y + 1) * chunk_height, canvas.height);
+      var max_x = chunk_width
+      var max_y = chunk_height;
 
-      for (var x = 0; x < chunk_width; x++) {
-        for (var y = 0; y < chunk_height; y++) {
+      if (chunk_x * chunk_width  >= canvas.width - chunk_width) {
+        max_x = canvas.width % chunk_width;
+      }
+      if (chunk_y * chunk_height >= canvas.height - chunk_height) {
+        max_y = canvas.height % chunk_height;
+      }
+
+      for (var x = 0; x < max_x; x++) {
+        for (var y = 0; y < max_y; y++) {
           var nearest = tree.nearest({
             x: x + chunk_x * chunk_width,
             y: y + chunk_y * chunk_height
