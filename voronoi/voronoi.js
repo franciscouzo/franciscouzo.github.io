@@ -183,6 +183,9 @@ document.addEventListener('DOMContentLoaded', function() {
       random: function(a, b) {
         return Math.random() * Math.abs(a.x - b.x) +
                Math.random() * Math.abs(a.y - b.y);
+      },
+      constant: function(a, b) {
+        return 0;
       }
     };
 
