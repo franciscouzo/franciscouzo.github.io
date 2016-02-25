@@ -25,6 +25,9 @@ var init_shaders = function(gl, fs_source, vs_source) {
 
   gl.linkProgram(program_id);
 
+  gl.deleteShader(fragment_shader);
+  gl.deleteShader(vertex_shader);
+
   if (!gl.getProgramParameter(program_id, gl.LINK_STATUS)) {
     alert("Could not initialize shaders");
   }
@@ -122,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.onmousedown = function() {
     generate();
+    gl.deleteProgram(program);
     var formatted_fragment_shader = fragment_shader_source.replace(/{(.+?)}/g, function(match, s) {
       return d[s];
     });
