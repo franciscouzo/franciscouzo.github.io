@@ -51,24 +51,18 @@ document.addEventListener('DOMContentLoaded', function() {
   program.metaballs   = gl.getUniformLocation(program, "metaballs");
   //program.metaballs_n = gl.getUniformLocation(program, "metaballs_n");
 
-  var mouse_x = 0;
-  var mouse_y = 0;
+  var mouse_x = -1;
+  var mouse_y = -1;
 
   var metaballs = []
 
-  function mousemove(x, y) {
-    if (metaballs.length / 3 === 31) metaballs = metaballs.slice(3);
-    metaballs.push(
-      x / canvas.width * 2 - 1,
-      y / canvas.height * - 2 + 1, 1
-    );
-  }
-
   canvas.addEventListener('mousemove', function(e) {
-    mousemove(e.pageX, e.pageY);
+    mouse_x = e.pageX;
+    mouse_y = e.pageY;
   });
   canvas.addEventListener('touchmove', function(e) {
-    mousemove(e.touches[0].pageX, e.touches[0].pageY);
+    mouse_x = e.touches[0].pageX;
+    mouse_y = e.touches[0].pageY;
   });
 
   var square_buffer = gl.createBuffer();
@@ -88,11 +82,16 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    gl.uniform3fv(program.metaballs, [
-      mouse_x / canvas.width * 2 - 1, mouse_y / canvas.height * - 2 + 1, 1,
-    ].concat(metaballs));
+    if (metaballs.length / 3 === 32) metaballs = metaballs.slice(3);
 
-    gl.uniform1i(program.metaballs_n, metaballs.length / 3 + 1);
+    metaballs.push(
+      mouse_x / canvas.width * 2 - 1,
+      mouse_y / canvas.height * - 2 + 1, 1
+    );
+
+    gl.uniform3fv(program.metaballs, metaballs);
+
+    gl.uniform1i(program.metaballs_n, metaballs.length / 3);
 
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
