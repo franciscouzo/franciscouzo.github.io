@@ -84,20 +84,26 @@ document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
-  if (window.location.hash) {
-    var res = decodeURIComponent(window.location.hash.substring(1)).split(':');
-    var d = {
-      expr1: res[0],
-      expr2: res[1],
-      expr3: res[2]
-    };
-  } else {
-    var d = {
+  var d;
+
+  function generate() {
+    d = {
       expr1: random_expr(),
       expr2: random_expr(),
       expr3: random_expr()
     };
     window.location.hash = '#' + d.expr1 + ':' + d.expr2 + ':' + d.expr3;
+  }
+
+  if (window.location.hash) {
+    var res = decodeURIComponent(window.location.hash.substring(1)).split(':');
+    d = {
+      expr1: res[0],
+      expr2: res[1],
+      expr3: res[2]
+    };
+  } else {
+    generate();
   }
 
   var formatted_fragment_shader = fragment_shader_source.replace(/{(.+?)}/g, function(match, s) {
@@ -113,6 +119,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var mouse_x = 0;
   var mouse_y = 0;
+
+  document.onmousedown = function() {
+    generate();
+    var formatted_fragment_shader = fragment_shader_source.replace(/{(.+?)}/g, function(match, s) {
+      return d[s];
+    });
+
+    program = init_shaders(gl, formatted_fragment_shader, vertex_shader_source);
+    gl.useProgram(program);
+
+    program.timestamp = gl.getUniformLocation(program, "t");
+    program.mouse_x   = gl.getUniformLocation(program, "mx");
+    program.mouse_y   = gl.getUniformLocation(program, "my");
+  }
 
   document.onmousemove = function(e) {
     mouse_x = e.pageX;
