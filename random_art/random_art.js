@@ -161,8 +161,8 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.height = window.innerHeight;
 
     gl.uniform1f(program.timestamp, timestamp / 1000);
-    gl.uniform1f(program.mouse_x, mouse_x / canvas.width);
-    gl.uniform1f(program.mouse_y, mouse_y / canvas.height);
+    gl.uniform1f(program.mouse_x, mouse_x / canvas.width * 2 - 1);
+    gl.uniform1f(program.mouse_y, mouse_y / canvas.height * 2 - 1);
 
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
