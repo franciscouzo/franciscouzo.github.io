@@ -31,11 +31,11 @@ var init_shaders = function(gl, fs_source, vs_source) {
 
   program_id.position = gl.getAttribLocation(program_id, "vertexPos");
   gl.enableVertexAttribArray(program_id.position);
-  
+
   return program_id;
 }
 
-var fragment_shader_source = 
+var fragment_shader_source =
   "#define pi 3.1415926535897932\n" +
   "precision mediump float;\n" +
   "varying vec2 v_texCoord;\n" +
@@ -49,7 +49,7 @@ var fragment_shader_source =
   "    gl_FragColor = vec4({expr1}, {expr2}, {expr3}, 1.0);\n" +
   "}";
 
-var vertex_shader_source = 
+var vertex_shader_source =
   "precision mediump float;\n" +
   "attribute vec2 vertexPos;\n" +
   "varying vec2 v_texCoord;\n" +
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var formatted_fragment_shader = fragment_shader_source.replace(/{(.+?)}/g, function(match, s) {
     return d[s];
   });
-  
+
   var program = init_shaders(gl, formatted_fragment_shader, vertex_shader_source);
   gl.useProgram(program);
 
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
     mouse_x = e.pageX;
     mouse_y = e.pageY;
   };
-  
+
   var square_buffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, square_buffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
