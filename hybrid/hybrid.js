@@ -65,8 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
         image.x, image.y,
         image.width * image.size, image.height * image.size);
     }
-
-    requestAnimationFrame(draw);
   }
   draw();
 
@@ -156,6 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
       image.x = (x - editing.mouse_start.x) + editing.image_start.x
       image.y = (y - editing.mouse_start.y) + editing.image_start.y
     }
+
+    draw();
   });
 
   document.addEventListener('mouseup', function(e) {
@@ -201,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
               rot: 0,
               size: 1
             };
+
+            draw();
           }
         }
         reader.readAsDataURL(e.target.files[0]);
