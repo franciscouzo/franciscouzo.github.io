@@ -84,10 +84,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (metaballs.length / 3 === 32) metaballs = metaballs.slice(3);
 
-    metaballs.push(
-      mouse_x / canvas.width * 2 - 1,
-      mouse_y / canvas.height * - 2 + 1, 1
-    );
+    if (mouse_x !== -1 || mouse_y !== -1) {
+      metaballs.push(
+        mouse_x / canvas.width * 2 - 1,
+        mouse_y / canvas.height * - 2 + 1, 1
+      );
+    }
 
     gl.uniform3fv(program.metaballs, metaballs);
 
