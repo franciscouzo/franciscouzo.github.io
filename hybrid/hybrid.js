@@ -68,6 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   draw();
 
+  window.addEventListener('resize', draw);
+
   var editing = {
     selected_image_i: undefined,
     action: undefined,
