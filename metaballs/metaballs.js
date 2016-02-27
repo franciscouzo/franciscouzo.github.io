@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var mouse_x = -1;
   var mouse_y = -1;
 
-  var metaballs = []
+  var metaballs = [0, 0, 0]
 
   canvas.addEventListener('mousemove', function(e) {
     mouse_x = e.pageX;
