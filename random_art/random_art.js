@@ -91,7 +91,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var exprs = decodeURIComponent(window.location.hash.substring(1)).split(':');
     } else {
       exprs = [random_expr(), random_expr(), random_expr()];
-      window.location.hash = '#' + exprs.join(':');
+      //window.location.hash = '#' + exprs.join(':');
+      history.replaceState(undefined, undefined, '#' + exprs.join(':'));
     }
 
     var formatted_fragment_shader = fragment_shader_source.replace(/{(\d+)}/g, function(match, i) {
