@@ -6,7 +6,6 @@ var init_shaders = function(gl, fs_source, vs_source) {
   gl.compileShader(fragment_shader);
   if (!gl.getShaderParameter(fragment_shader, gl.COMPILE_STATUS)) {
     console.log("ERROR IN " + fragment_shader + "SHADER: " + gl.getShaderInfoLog(fragment_shader));
-    alert("Error in fragment shader")
     return false;
   }
 
@@ -15,7 +14,6 @@ var init_shaders = function(gl, fs_source, vs_source) {
   gl.compileShader(vertex_shader);
   if (!gl.getShaderParameter(vertex_shader, gl.COMPILE_STATUS)) {
     console.log("ERROR IN " + vertex_shader + "SHADER: " + gl.getShaderInfoLog(vertex_shader));
-    alert("Error in vertex shader")
     return false;
   }
 
@@ -39,17 +37,15 @@ var init_shaders = function(gl, fs_source, vs_source) {
 }
 
 var fragment_shader_source =
-  "#define pi 3.1415926535897932\n" +
   "precision mediump float;\n" +
   "varying vec2 v_texCoord;\n" +
   "uniform float t;\n" +
   "uniform float mx;\n" +
   "uniform float my;\n" +
   "void main() {\n" +
-  //"    gl_FragColor = vec4(v_texCoord, 0.0, 1.0);\n" +
   "    float x = v_texCoord.x;\n" +
   "    float y = v_texCoord.y;\n" +
-  "    gl_FragColor = vec4({expr1}, {expr2}, {expr3}, 1.0);\n" +
+  "    gl_FragColor = vec4({0}, {1}, {2}, 1.0);\n" +
   "}";
 
 var vertex_shader_source =
@@ -87,56 +83,43 @@ document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
-  var d;
+  var program;
 
-  function generate() {
-    d = {
-      expr1: random_expr(),
-      expr2: random_expr(),
-      expr3: random_expr()
-    };
-    window.location.hash = '#' + d.expr1 + ':' + d.expr2 + ':' + d.expr3;
-  }
+  var update_shader = function(force_update) {
+    var d;
+    if (window.location.hash && !force_update) {
+      var exprs = decodeURIComponent(window.location.hash.substring(1)).split(':');
+    } else {
+      exprs = [random_expr(), random_expr(), random_expr()];
+      window.location.hash = '#' + exprs.join(':');
+    }
 
-  if (window.location.hash) {
-    var res = decodeURIComponent(window.location.hash.substring(1)).split(':');
-    d = {
-      expr1: res[0],
-      expr2: res[1],
-      expr3: res[2]
-    };
-  } else {
-    generate();
-  }
-
-  var formatted_fragment_shader = fragment_shader_source.replace(/{(.+?)}/g, function(match, s) {
-    return d[s];
-  });
-
-  var program = init_shaders(gl, formatted_fragment_shader, vertex_shader_source);
-  gl.useProgram(program);
-
-  program.timestamp = gl.getUniformLocation(program, "t");
-  program.mouse_x   = gl.getUniformLocation(program, "mx");
-  program.mouse_y   = gl.getUniformLocation(program, "my");
-
-  var mouse_x = 0;
-  var mouse_y = 0;
-
-  document.onmousedown = function() {
-    generate();
-    gl.deleteProgram(program);
-    var formatted_fragment_shader = fragment_shader_source.replace(/{(.+?)}/g, function(match, s) {
-      return d[s];
+    var formatted_fragment_shader = fragment_shader_source.replace(/{(\d+)}/g, function(match, i) {
+      return exprs[i];
     });
 
     program = init_shaders(gl, formatted_fragment_shader, vertex_shader_source);
+    if (!program) return;
     gl.useProgram(program);
 
     program.timestamp = gl.getUniformLocation(program, "t");
     program.mouse_x   = gl.getUniformLocation(program, "mx");
     program.mouse_y   = gl.getUniformLocation(program, "my");
-  }
+
+    gl.deleteProgram(program);
+  };
+
+  update_shader();
+
+  var mouse_x = 0;
+  var mouse_y = 0;
+
+  window.addEventListener("mousedown", function() {
+    update_shader(true);
+  });
+  window.addEventListener("hashchange", function() {
+    update_shader();
+  });
 
   document.onmousemove = function(e) {
     mouse_x = e.pageX;
