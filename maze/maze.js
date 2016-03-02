@@ -167,27 +167,34 @@ RandomDepthFirstMaze.prototype = Object.create(RandomTraversalMaze.prototype);
 RandomDepthFirstMaze.prototype.constructor = RandomDepthFirstMaze;
 
 RandomDepthFirstMaze.prototype.pop = function() {
-  if (!this.frontier) return;
-
   return this.frontier.pop();
 };
 
 function PrimMaze() {
   this.frontier = minHeap(function(a, b) { return a.weight - b.weight; });
-  RandomTraversalMaze.apply(this, arguments);
+  RandomDepthFirstMaze.apply(this, arguments);
 }
 
-PrimMaze.prototype = Object.create(RandomTraversalMaze.prototype);
+PrimMaze.prototype = Object.create(RandomDepthFirstMaze.prototype);
 PrimMaze.prototype.constructor = PrimMaze;
 
 PrimMaze.prototype.push = function(x, y, direction) {
   this.frontier.push({x: x, y: y, direction: direction, weight: Math.random()});
 };
 
-PrimMaze.prototype.pop = function() {
-  if (!this.frontier) return;
+function HalfHalfMaze() {
+  RandomTraversalMaze.apply(this, arguments);
+}
 
-  return this.frontier.pop();
+HalfHalfMaze.prototype = Object.create(RandomTraversalMaze.prototype);
+HalfHalfMaze.prototype.constructor = HalfHalfMaze;
+
+HalfHalfMaze.prototype.pop = function() {
+  if (Math.random() < 0.5) {
+    return this.frontier.shift();
+  } else {
+    return this.frontier.pop();
+  }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
