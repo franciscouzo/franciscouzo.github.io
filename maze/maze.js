@@ -52,7 +52,7 @@ function RandomTraversalMaze(width, height, start, maze_drawer, canvas_context) 
       this.cells[y] = Array(width);
   }
 
-  this.frontier = [];
+  this.frontier = this.frontier || [];
   this.maze_drawer = maze_drawer;
 
   this.maze_drawer.style("white");
@@ -170,7 +170,25 @@ RandomDepthFirstMaze.prototype.pop = function() {
   if (!this.frontier) return;
 
   return this.frontier.pop();
+};
+
+function PrimMaze() {
+  this.frontier = minHeap(function(a, b) { return a.weight - b.weight; });
+  RandomTraversalMaze.apply(this, arguments);
 }
+
+PrimMaze.prototype = Object.create(RandomTraversalMaze.prototype);
+PrimMaze.prototype.constructor = PrimMaze;
+
+PrimMaze.prototype.push = function(x, y, direction) {
+  this.frontier.push({x: x, y: y, direction: direction, weight: Math.random()});
+};
+
+PrimMaze.prototype.pop = function() {
+  if (!this.frontier) return;
+
+  return this.frontier.pop();
+};
 
 document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
