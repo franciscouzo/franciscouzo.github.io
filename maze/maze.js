@@ -44,8 +44,14 @@ MazeDrawer.prototype.fill_south = function(x, y) {
                     CELL_SIZE, CELL_SPACING);
 }
 
-function RandomTraversalMaze(cells, start, maze_drawer, canvas_context) {
-  this.cells = cells;
+function RandomTraversalMaze(width, height, start, maze_drawer, canvas_context) {
+  this.width = width;
+  this.height = height;
+  this.cells = [];
+  for (var y = 0; y < height; y++) {
+      this.cells[y] = Array(width);
+  }
+
   this.frontier = [];
   this.maze_drawer = maze_drawer;
 
@@ -55,18 +61,22 @@ function RandomTraversalMaze(cells, start, maze_drawer, canvas_context) {
   this.cells[start.y][start.x] = 0;
 
   if (start.y > 0) {
-    this.frontier.push({x: start.x, y: start.y, direction: N});
+    this.push(start.x, start.y, N);
   }
-  if (start.y < cells.length - 1) {
-    this.frontier.push({x: start.x, y: start.y, direction: S});
+  if (start.y < height - 1) {
+    this.push(start.x, start.y, S);
   }
   if (start.x > 0) {
-    this.frontier.push({x: start.x, y: start.y, direction: W});
+    this.push(start.x, start.y, W);
   }
-  if (start.y < cells[0].length - 1) {
-    this.frontier.push({x: start.x, y: start.y, direction: E});
+  if (start.y < width - 1) {
+    this.push(start.x, start.y, E);
   }
 }
+
+RandomTraversalMaze.prototype.push = function(x, y, direction) {
+  this.frontier.push({x: x, y: y, direction: direction});
+};
 
 RandomTraversalMaze.prototype.pop = function() {
   if (!this.frontier) return;
@@ -126,22 +136,22 @@ RandomTraversalMaze.prototype.step = function() {
 
     if (y > 0 && this.cells[y - 1][x] === undefined) {
       this.maze_drawer.fill_south(x, y - 1);
-      this.frontier.push({x: x, y: y, direction: N});
+      this.push(x, y, N);
       m++;
     }
-    if (y < this.cells.length - 1 && this.cells[y + 1][x] === undefined) {
+    if (y < this.height - 1 && this.cells[y + 1][x] === undefined) {
       this.maze_drawer.fill_south(x, y);
-      this.frontier.push({x: x, y: y, direction: S});
+      this.push(x, y, S);
       m++;
     }
     if (x > 0 && this.cells[y][x - 1] === undefined) {
       this.maze_drawer.fill_east(x - 1, y);
-      this.frontier.push({x: x, y: y, direction: W});
+      this.push(x, y, W);
       m++;
     }
-    if (x < this.cells[y].length - 1 && this.cells[y][x + 1] === undefined) {
+    if (x < this.width - 1 && this.cells[y][x + 1] === undefined) {
       this.maze_drawer.fill_east(x, y);
-      this.frontier.push({x: x, y: y, direction: E});
+      this.push(x, y, E);
       m++;
     }
 
@@ -184,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var generating = false;
   var flooding = false;
 
-  var width, height, cells;
+  var maze, width, height;
 
   var start = {x: 0, y: 0};
 
@@ -212,11 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
       Math.round((canvas.height - height * CELL_SIZE - (height + 1) * CELL_SPACING) / 2)
     );
 
-    cells = [];
-    for (var y = 0; y < height; y++) {
-      cells[y] = Array(width);
-    }
-
     var starting_point = document.getElementById("starting_point").value;
     if (starting_point === 'top_left') {
       start = {
@@ -236,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var mode = document.getElementById("maze_mode").value;
-    var maze = new window[mode](cells, start, new MazeDrawer(ctx));
+    maze = new window[mode](width, height, start, new MazeDrawer(ctx));
 
     var steps = width * height / 2500;
     function step() {
@@ -314,23 +319,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         for (var i = 0; i < frontier.length; ++i) {
           var f = frontier[i];
-          if (!cells[f.y]) continue;
-          if (cells[f.y][f.x] & E && !visited[f.y][f.x + 1]) {
+          if (!maze.cells[f.y]) continue;
+          if (maze.cells[f.y][f.x] & E && !visited[f.y][f.x + 1]) {
             visited[f.y][f.x + 1] = true;
             maze_drawer.fill_east(f.x, f.y);
             frontier1.push({x: f.x + 1, y: f.y});
           }
-          if (cells[f.y][f.x] & W && !visited[f.y][f.x - 1]) {
+          if (maze.cells[f.y][f.x] & W && !visited[f.y][f.x - 1]) {
             visited[f.y][f.x - 1] = true;
             maze_drawer.fill_east(f.x - 1, f.y);
             frontier1.push({x: f.x - 1, y: f.y});
           }
-          if (cells[f.y][f.x] & S && visited[f.y + 1] && !visited[f.y + 1][f.x]) {
+          if (maze.cells[f.y][f.x] & S && visited[f.y + 1] && !visited[f.y + 1][f.x]) {
             visited[f.y + 1][f.x] = true;
             maze_drawer.fill_south(f.x, f.y);
             frontier1.push({x: f.x, y: f.y + 1});
           }
-          if (cells[f.y][f.x] & N && visited[f.y - 1] && !visited[f.y - 1][f.x]) {
+          if (maze.cells[f.y][f.x] & N && visited[f.y - 1] && !visited[f.y - 1][f.x]) {
             visited[f.y - 1][f.x] = true;
             maze_drawer.fill_south(f.x, f.y - 1);
             frontier1.push({x: f.x, y: f.y - 1});
