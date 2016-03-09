@@ -50,8 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var ctx = canvas.getContext('2d');
 
   function draw() {
-    ctx.canvas.width  = window.innerWidth;
-    ctx.canvas.height = window.innerHeight;
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     for (var i = 0; i < image_uploads.length; i++) {
       var image = images[i];
