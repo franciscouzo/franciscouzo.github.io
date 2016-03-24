@@ -3,7 +3,12 @@
 document.addEventListener('DOMContentLoaded', function() {
   var image_upload = document.getElementById('image_upload');
   var generate_button = document.getElementById('generate_button');
+  var clear_button = document.getElementById('clear_button');
   var stop_button = document.getElementById('stop_button');
+
+  generate_button.disabled = false;
+  clear_button.disabled = false;
+  stop_button.disabled = true;
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
@@ -111,19 +116,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
   stop_button.addEventListener('click', function() {
     generating = false;
+
+    generate_button.disabled = false;
+    clear_button.disabled = false;
+    stop_button.disabled = true;
   });
 
   clear_button.addEventListener('click', function() {
-    if (!generating) {
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   });
 
   generate_button.addEventListener('click', function() {
-    if (generating) {
-      return;
-    }
+    generate_button.disabled = true;
+    clear_button.disabled = true;
+    stop_button.disabled = false;
+
     generating = true;
 
     var circular_area = document.getElementById('circular_checkbox').checked;
@@ -265,6 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       generating = false;
+      generate_button.disabled = false;
+      clear_button.disabled = false;
+      stop_button.disabled = true;
     };
 
     requestAnimationFrame(step);
