@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         generate_button.disabled = false;
-      }
-    }
+      };
+    };
     reader.readAsDataURL(e.target.files[0]);
   }, false);
 
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
       b = Math.floor(b / count);
 
       return [r, g, b];
-    }
+    };
 
     var laplace_convolution = convolute(img_data,
       [[1,  1, 1],
