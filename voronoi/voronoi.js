@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   var image_upload = document.getElementById('image_upload');
   var generate_button = document.getElementById('generate_button');
-  var stop_button = document.getElementById('stop_button');
+  generate_button.disabled = true;
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
           canvas.height = img.height;
         }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        generate_button.disabled = false;
       }
     }
     reader.readAsDataURL(e.target.files[0]);
