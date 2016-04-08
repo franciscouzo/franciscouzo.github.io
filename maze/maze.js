@@ -215,7 +215,6 @@ document.addEventListener('DOMContentLoaded', function() {
   stop_button.disabled = true;
   flood_button.disabled = true;
 
-  var generated = false;
   var generating = false;
   var flooding = false;
 
@@ -228,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
     stop_button.disabled = false;
     flood_button.disabled = true;
 
-    generated = false;
     generating = true;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -277,7 +275,6 @@ document.addEventListener('DOMContentLoaded', function() {
             start_button.disabled = false;
             stop_button.disabled = true;
             flood_button.disabled = false;
-            generated = true;
             return;
           }
       }
