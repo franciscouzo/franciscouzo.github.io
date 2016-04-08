@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674', '#FECB05'],
     ['#E96B6C', '#F7989C'],
     ['#AD5277', '#F7989C'],
-    ['#FF934F']
+    ['#FF934F'],
+    ['#A8AA00', '#83BE28']
   ];
   var colors_off =  [
     ['#9CA594', '#ACB4A5', '#BBB964', '#D7DAAA', '#E5D57D', '#D1D6AF'],
@@ -36,7 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ['#F49427', '#C9785D', '#E88C6A', '#F1B081', '#FFCE00'],
     ['#635A4A', '#817865', '#9C9C84'],
     ['#635A4A', '#817865', '#9C9C84'],
-    ['#9C9C9C']
+    ['#9C9C9C'],
+    ['#828200', '#669A1B']
   ];
 
   var painting = false;
@@ -137,14 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var circular_area = document.getElementById('circular_checkbox').checked;
     var invert_colors = document.getElementById('invert_checkbox').checked;
 
-    var draw_style;
-    var radios = document.getElementsByName('color_style');
-
-    for (var i = 0; i < radios.length; i++) {
-      if (radios[i].checked) {
-        draw_style = radios[i].value;
-      }
-    }
+    var select = document.getElementById('color_style');
+    var draw_style = select.options[select.selectedIndex].value;
 
     var img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
