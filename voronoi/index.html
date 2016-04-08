@@ -2,6 +2,7 @@
     <head>
         <title>Voronoi Images</title>
         <meta charset="utf-8">
+        <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <style>
             html, body {
                 width:  100%;
@@ -22,6 +23,11 @@
             input[type=number] {
                 width: 60px;
             }
+            #go-back {
+                position: absolute;
+                left: 10px;
+                top: 10px;
+            }
         </style>
         <script src="/kdTree.js"></script>
         <script src="voronoi.js"></script>
@@ -36,6 +42,7 @@
         </script>
     </head>
     <body>
+        <span id="go-back"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a></span>
         <center>
             <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
         </center>

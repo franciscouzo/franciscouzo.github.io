@@ -2,6 +2,7 @@
     <head>
         <title>Ishihara Plate Generator</title>
         <meta charset="utf-8">
+        <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <style>
             html, body {
                 width:  100%;
@@ -14,14 +15,14 @@
                 -ms-user-select: none;
                 user-select: none;
             }
-            #help {
-                position: absolute;
-                left: 0px;
-                top: 10px;
-            }
             table {
                 position: absolute;
                 right: 0px;
+                top: 10px;
+            }
+            #top-left {
+                position: absolute;
+                left: 10px;
                 top: 10px;
             }
         </style>
@@ -39,13 +40,13 @@
         </script>
     </head>
     <body>
+        <span id="top-left"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a><br><small>
+            Draw with your mouse <small>(ctrl to delete)</small><br>
+            Or load an image to convert <small>(white and black works best)</small>
+        </small></span>
         <center>
             <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
         </center>
-        <small id="help">
-            Draw with your mouse <small>(ctrl to delete)</small><br>
-            Or load an image to convert <small>(white and black works best)</small>
-        </small>
         <table>
             <tr>
                 <td>

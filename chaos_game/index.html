@@ -2,6 +2,7 @@
     <head>
         <title>Chaos Game</title>
         <meta charset="utf-8">
+        <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <style>
             html, body {
                 width:  100%;
@@ -14,14 +15,14 @@
                 -ms-user-select: none;
                 user-select: none;
             }
-            #help {
-                position: absolute;
-                left: 0px;
-                top: 10px;
-            }
             div {
                 position: absolute;
                 right: 10px;
+                top: 10px;
+            }
+            #top-left {
+                position: absolute;
+                left: 10px;
                 top: 10px;
             }
         </style>
@@ -37,10 +38,8 @@
         </script>
     </head>
     <body>
+        <span id="top-left"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a> <small><small>You can drag points, ctrl to add, shift to delete</small></small></span>
         <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
-        <small id="help">
-            <small>You can drag points, ctrl to add, shift to delete</small>
-        </small>
         <div>
             <small>Ratio: </small><input type="range" id="ratio" min="1" max="1000" value="500" /><br />
             <center>
