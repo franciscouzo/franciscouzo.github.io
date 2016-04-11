@@ -1,5 +1,65 @@
 'use strict';
 
+function CircleFactory() {
+}
+
+CircleFactory.prototype.generate = function(circular_area) {
+  var min_radius = (canvas.width + canvas.height) / 600;
+  var max_radius = (canvas.width + canvas.height) / 150;
+  var radius = min_radius + Math.random() * (max_radius - min_radius);
+
+  if (circular_area) {
+    var angle = Math.random() * 2 * Math.PI;
+    var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
+    var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
+    var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
+  } else {
+    var x = radius + Math.random() * (canvas.width  - radius * 2);
+    var y = radius + Math.random() * (canvas.height - radius * 2);
+  }
+
+  return {x: x, y: y, radius: radius};
+}
+
+CircleFactory.prototype.overlaps_image = function(img_data, circle) {
+  var x = circle.x;
+  var y = circle.y;
+  var r = circle.radius;
+
+  var points_x = [x, x, x, x-r, x+r, x-r*0.93, x-r*0.93, x+r*0.93, x+r*0.93]
+  var points_y = [y, y-r, y+r, y, y, y+r*0.93, y-r*0.93, y+r*0.93, y-r*0.93]
+
+  for (var i = 0; i < points_x.length; i++) {
+    var x = points_x[i];
+    var y = points_y[i];
+
+    var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
+
+    var r = img_data.data[index];
+    var g = img_data.data[index + 1];
+    var b = img_data.data[index + 2];
+    var a = img_data.data[index + 3];
+
+    if ((r + g + b) * (a / 255) < 127) {
+      return true;
+    }
+  }
+  return false;
+}
+
+CircleFactory.prototype.intersects = function(circle1, circle2) {
+  return Math.pow(circle2.x - circle1.x, 2) +
+         Math.pow(circle2.y - circle1.y, 2) <
+         Math.pow(circle1.radius + circle2.radius, 2)
+}
+
+CircleFactory.prototype.draw = function(ctx, circle) {
+  ctx.beginPath();
+  ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.closePath();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var image_upload = document.getElementById('image_upload');
   var generate_button = document.getElementById('generate_button');
@@ -146,70 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    var min_radius = (canvas.width + canvas.height) / 600;
-    var max_radius = (canvas.width + canvas.height) / 150;
-
-    var generate_circle = function(circular_area) {
-      var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-      if (circular_area) {
-        var angle = Math.random() * 2 * Math.PI;
-        var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
-        var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
-        var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
-      } else {
-        var x = radius + Math.random() * (canvas.width  - radius * 2);
-        var y = radius + Math.random() * (canvas.height - radius * 2);
-      }
-
-      return {x: x, y: y, radius: radius};
-    }
-
-    var overlaps_image = function(circle) {
-      var x = circle.x;
-      var y = circle.y;
-      var r = circle.radius;
-
-      var points_x = [x, x, x, x-r, x+r, x-r*0.93, x-r*0.93, x+r*0.93, x+r*0.93]
-      var points_y = [y, y-r, y+r, y, y, y+r*0.93, y-r*0.93, y+r*0.93, y-r*0.93]
-
-      for (var i = 0; i < points_x.length; i++) {
-        var x = points_x[i];
-        var y = points_y[i];
-
-        var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
-
-        var r = img_data.data[index];
-        var g = img_data.data[index + 1];
-        var b = img_data.data[index + 2];
-        var a = img_data.data[index + 3];
-
-        if ((r + g + b) * (a / 255) < 127) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    var circle_intersection = function(circle1, circle2) {
-      return Math.pow(circle2.x - circle1.x, 2) +
-             Math.pow(circle2.y - circle1.y, 2) <
-             Math.pow(circle1.radius + circle2.radius, 2)
-    }
-
-    var draw_circle = function(circle, color_on, color_off) {
-      ctx.beginPath();
-
-      if (overlaps_image(circle)) {
-        ctx.fillStyle = color_on[Math.floor(Math.random() * color_on.length)];
-      } else {
-        ctx.fillStyle = color_off[Math.floor(Math.random() * color_off.length)];
-      }
-
-      ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.closePath();
-    }
+    var shape_factory = new CircleFactory();
 
     var tree = new kdTree([], function(a, b) {
       return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
@@ -238,33 +235,40 @@ document.addEventListener('DOMContentLoaded', function() {
             requestAnimationFrame(step);
             return;
           }
-          var circle = generate_circle(circular_area);
-          var nearest = tree.nearest(circle, 8);
+
+          var shape = shape_factory.generate(circular_area);
+          var nearest = tree.nearest(shape, 8);
 
           var intersects = false;
 
           for (var j = 0; j < nearest.length; j++) {
-            var near_circle = nearest[j][0];
-            if (circle_intersection(circle, near_circle)) {
+            var near_shape = nearest[j][0];
+            if (shape_factory.intersects(shape, near_shape)) {
               intersects = true;
               break;
             }
           }
 
-          if (!intersects) {
-            step_n++;
-            if (invert_colors) {
-              draw_circle(circle, colors_off[draw_style], colors_on[draw_style]);
-            } else {
-              draw_circle(circle, colors_on[draw_style], colors_off[draw_style]);
-            }
-            tree.insert(circle);
-            if (step_n % 50 == 0) {
-              requestAnimationFrame(step);
-              return;
-            } else {
-              break;
-            }
+          if (intersects) {
+            continue;
+          }
+
+          step_n++;
+
+          if (shape_factory.overlaps_image(img_data, shape) != invert_colors) {
+            ctx.fillStyle = colors_on[draw_style][Math.floor(Math.random() * colors_on[draw_style].length)];
+          } else {
+            ctx.fillStyle = colors_off[draw_style][Math.floor(Math.random() * colors_off[draw_style].length)];
+          }
+
+          shape_factory.draw(ctx, shape);
+
+          tree.insert(shape);
+          if (step_n % 50 == 0) {
+            requestAnimationFrame(step);
+            return;
+          } else {
+            break;
           }
         }
       }
