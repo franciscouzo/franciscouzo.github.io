@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <title>Genetic Art</title>
+        <meta charset="utf-8">
+        <link href="/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <style>
+            html, body {
+                width:  100%;
+                height: 100%;
+                margin: 0px;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+            table {
+                position: absolute;
+                right: 0px;
+                top: 10px;
+            }
+            #go-back {
+                position: absolute;
+                left: 10px;
+                top: 10px;
+            }
+        </style>
+        <script src="genetic_art.js"></script>
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-16870004-8', 'auto');
+            ga('send', 'pageview');
+        </script>
+    </head>
+    <body>
+        <span id="go-back"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a><br>
+            <p id="generation"></p>
+        </span>
+        <center>
+            <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
+        </center>
+        <table>
+            <tr>
+                <td>
+                    <input type="file" id="image_upload" accept="image/*"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <small>Style</small>
+                    <select id="style">
+                        <option value="LineFactory">Lines</option>
+                        <option value="TriangleFactory">Triangles</option>
+                        <option value="SquareFactory" selected>Squares</option>
+                        <option value="CircleFactory">Circles</option>
+                    </select>
+                    <input id="resize_checkbox" type="checkbox" checked /><small>Resize</small>
+                    <input id="show_tries" type="checkbox" checked /><small>Show tries</small>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="generate_button">Generate</button>
+                    <button id="clear_button">Clear</button>
+                    <button id="stop_button">Stop</button>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
