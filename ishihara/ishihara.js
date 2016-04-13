@@ -50,7 +50,7 @@ CircleFactory.prototype.overlaps_image = function(img_data, circle) {
 CircleFactory.prototype.intersects = function(circle1, circle2) {
   return Math.pow(circle2.x - circle1.x, 2) +
          Math.pow(circle2.y - circle1.y, 2) <
-         Math.pow(circle1.radius + circle2.radius, 2)
+         Math.pow(circle1.radius + circle2.radius, 2);
 }
 
 CircleFactory.prototype.draw = function(ctx, circle) {
