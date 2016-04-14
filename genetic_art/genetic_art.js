@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var shape_factory = new window[draw_style]();
 
     if (draw_style == 'LineFactory') {
-      var shape_n = 1000;
+      var shape_n = canvas.width + canvas.height;
     } else {
       var shape_n = 500;
     }
