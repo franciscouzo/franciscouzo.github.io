@@ -255,11 +255,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   canvas.addEventListener('mousedown', function(e) {
-    onclick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+    if (e.which == 1) {
+      onclick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+    } else if (e.which == 3) {
+      onclick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, false);
+    }
   });
   canvas.addEventListener('contextmenu', function(e) {
-    console.log(e.pageX - this.offsetLeft, e.pageY - this.offsetTop)
-    onclick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, false);
     e.preventDefault();
     return false;
   });
