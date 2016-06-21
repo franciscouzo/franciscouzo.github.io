@@ -226,10 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
     game.draw(ctx);
   })
 
-  canvas.addEventListener('mousedown', function(e) {
-    var x = e.pageX - this.offsetLeft;
-    var y = e.pageY - this.offsetTop;
-
+  function onclick(x, y, left_click) {
     var found_circle;
     for (var i = 0; i < 6; i++) {
       var circle_x = ctx.canvas.width  / 2 + Math.sin(Math.PI * i / 3) * game.radius * (1 + game.piece_ratio);
@@ -243,13 +240,31 @@ document.addEventListener('DOMContentLoaded', function() {
         found_circle = i;
       }
     }
-    if (found_circle !== undefined) {
-      var win = game.rotate_circle(found_circle);
-      game.draw(ctx);
-      if (win) {
-        alert("You win!");
+
+    if (found_circle === undefined) {
+      return;
+    }
+
+    if (!left_click) {
+      for (var i = 0; i < 3; i++) {
+        game.rotate_circle(found_circle);
       }
     }
+    var win = game.rotate_circle(found_circle);
+    game.draw(ctx);
+    if (win) {
+      alert("You win!");
+    }
+  }
+
+  canvas.addEventListener('mousedown', function(e) {
+    onclick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
+  });
+  canvas.addEventListener('contextmenu', function(e) {
+    console.log(e.pageX - this.offsetLeft, e.pageY - this.offsetTop)
+    onclick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, false);
+    e.preventDefault();
+    return false;
   });
 
   game.draw(ctx);
