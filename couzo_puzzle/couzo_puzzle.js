@@ -26,7 +26,7 @@ Game.prototype.colors = [
 
 Game.prototype.relative_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, -2, -3, -4];
 Game.prototype.relative_index = function(n, i) {
-  var r_index = this.relative_indexes[i];
+  var r_index = this.relative_indexes[mod(i, this.relative_indexes.length)];
   return mod(n * 9 + r_index, this.data.length);
 };
 
@@ -156,11 +156,8 @@ Game.prototype.draw_circle = function(n) {
 Game.prototype.rotate_circle = function(n) {
   for (var j = 0; j < 2; j++) {
     for (var i = this.relative_indexes.length - 1; i > 0; i--) {
-      var r_index = this.relative_indexes[i];
-      var r_prev_index = this.relative_indexes[mod(i - 1, this.relative_indexes.length)];
-
-      var index = mod(n * 9 + r_index, this.data.length);
-      var prev_index = mod(n * 9 + r_prev_index, this.data.length);
+      var index = this.relative_index(n, i);
+      var prev_index = this.relative_index(n, i - 1);
 
       var tmp = this.data[prev_index];
       this.data[prev_index] = this.data[index];
