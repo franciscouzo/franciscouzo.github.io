@@ -164,9 +164,21 @@ Game.prototype.rotate_circle = function(n) {
       this.data[index] = tmp;
     }
   }
-
-  return JSON.stringify(this.data) == JSON.stringify(this.solution);
 };
+
+Game.prototype.rotate_middle_circle = function() {
+  var indexes = [7, 8, 16, 17, 25, 26, 34, 35, 43, 44, 52, 53];
+  for (var j = 0; j < 2; j++) {
+    for (var i = indexes.length - 1; i > 0; i--) {
+      var index = indexes[i];
+      var prev_index = indexes[mod(i - 1, indexes.length)];
+
+      var tmp = this.data[prev_index];
+      this.data[prev_index] = this.data[index];
+      this.data[index] = tmp;
+    }
+  }
+}
 
 Game.prototype.shuffle = function(n) {
   for (var i = 0; i < n; i++) {
@@ -179,6 +191,10 @@ Game.prototype.shuffle = function(n) {
       }
     }
   }
+}
+
+Game.prototype.is_solved = function() {
+  return JSON.stringify(this.data) == JSON.stringify(this.solution);
 }
 
 Game.prototype.draw = function(ctx) {
@@ -239,17 +255,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (found_circle === undefined) {
-      return;
+      var middle_x = ctx.canvas.width  / 2;
+      var middle_y = ctx.canvas.height / 2;
+
+      if (Math.pow(x - middle_x, 2) + Math.pow(y - middle_y, 2) < Math.pow(game.radius, 2)) {
+        // Clicked middle circle
+        if (!left_click) {
+          for (var i = 0; i < 4; i++) {
+            game.rotate_middle_circle();
+          }
+        }
+        game.rotate_middle_circle();
+      } else {
+        return
+      }
+    } else {
+      if (!left_click) {
+        for (var i = 0; i < 4; i++) {
+          game.rotate_circle(found_circle);
+        }
+      }
+      game.rotate_circle(found_circle);
     }
 
-    if (!left_click) {
-      for (var i = 0; i < 3; i++) {
-        game.rotate_circle(found_circle);
-      }
-    }
-    var win = game.rotate_circle(found_circle);
     game.draw(ctx);
-    if (win) {
+
+    if (game.is_solved()) {
       alert("You win!");
     }
   }
