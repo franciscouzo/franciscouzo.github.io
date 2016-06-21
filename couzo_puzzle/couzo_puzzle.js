@@ -7,6 +7,7 @@ function mod(n, m) {
 function Game() {
   this.data = [];
   this.solution = [];
+  this.shuffled = false;
   for (var i = 0; i < 6; i++) { // 6 outer circles
     for (var j = 0; j < 9; j++) { // each circle has its own 9 colors
       this.solution.push(i);
@@ -191,6 +192,7 @@ Game.prototype.shuffle = function(n) {
       }
     }
   }
+  this.shuffled = true;
 }
 
 Game.prototype.is_solved = function() {
@@ -281,7 +283,8 @@ document.addEventListener('DOMContentLoaded', function() {
     game.draw(ctx);
 
     if (game.is_solved()) {
-      alert("You win!");
+      alert(game.shuffled ? "You win!" : "You win ... Haha no, start the game first");
+      game.shuffled = false;
     }
   }
 
