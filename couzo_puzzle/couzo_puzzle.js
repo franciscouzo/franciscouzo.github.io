@@ -32,7 +32,6 @@ Game.prototype.relative_index = function(n, i) {
 };
 
 Game.prototype.piece_ratio = 0.4;
-Game.prototype.line_width = 4;
 
 Game.prototype.center_piece = function(style) {
   var center_piece = document.createElement('canvas');
@@ -207,6 +206,7 @@ Game.prototype.draw = function(ctx) {
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   this.radius = Math.min(ctx.canvas.width, ctx.canvas.height) / 5;
+  this.line_width = this.radius / 20;
 
   for (var i = 0; i < 6; i++) {
     var circle = this.draw_circle(i);
