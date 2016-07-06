@@ -15,6 +15,7 @@
                 -moz-user-select: none;
                 -ms-user-select: none;
                 user-select: none;
+                background-color: #F5F5DD;
             }
             #shuffle {
                 position: absolute;
@@ -25,6 +26,16 @@
                 position: absolute;
                 left: 10px;
                 top: 10px;
+            }
+            canvas {
+                padding-left: 0;
+                padding-right: 0;
+                margin-left: auto;
+                margin-right: auto;
+                display: block;
+            }
+            * {
+                outline: none;
             }
         </style>
         <script src="couzo_puzzle.js"></script>
@@ -41,6 +52,10 @@
     <body>
         <span id="go-back"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a></span>
         <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
+        <div id="undo_div" style="position: fixed; bottom: 10px; right: 10px;">
+            <i id="undo_button" class="fa fa-undo fa-5x" aria-hidden="true" style="cursor: pointer"></i>
+            <center>Undo</center>
+        </div>
         <div id="shuffle">
             <button id="shuffle_button_easy">Easy</button>
             <button id="shuffle_button_medium">Medium</button>
