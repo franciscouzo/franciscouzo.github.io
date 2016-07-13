@@ -57,10 +57,12 @@ SquareFactory.prototype.generate = function(width, height) {
 };
 
 SquareFactory.prototype.draw = function(ctx, square) {
-  ctx.translate(square.x + square.diameter / 2, square.y + square.diameter / 2)
+  ctx.save();
+  ctx.translate(square.x, square.y);
   ctx.rotate(square.angle);
   ctx.fillStyle = 'rgba(' + square.r + ', ' + square.g + ', ' + square.b + ', ' + square.a + ')';
-  ctx.fillRect(0, 0, square.diameter, square.diameter);
+  ctx.fillRect(-square.diameter / 2, -square.diameter / 2, square.diameter, square.diameter);
+  ctx.restore();
 };
 
 
@@ -110,9 +112,16 @@ document.addEventListener('DOMContentLoaded', function() {
   var clear_button = document.getElementById('clear_button');
   var stop_button = document.getElementById('stop_button');
 
+  var show_tries_tag = document.getElementById('show_tries');
+
+  var shape_count_tag = document.getElementById('shape_count');
+  var overdraw_tag = document.getElementById('overdraw');
+
   generate_button.disabled = false;
   clear_button.disabled = false;
   stop_button.disabled = true;
+
+  overdraw_tag.checked = false;
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
@@ -159,6 +168,14 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   });
 
+  overdraw_tag.addEventListener('click', function() {
+    shape_count_tag.disabled = this.checked;
+    if (this.checked) {
+      show_tries_tag.checked = false
+    }
+    show_tries_tag.disabled = this.checked;
+  });
+
   generate_button.addEventListener('click', function() {
     generate_button.disabled = true;
     clear_button.disabled = true;
@@ -179,27 +196,25 @@ document.addEventListener('DOMContentLoaded', function() {
     var generation = 0;
 
     var shape_factory = new window[draw_style]();
+    var shape_n = Number(shape_count_tag.value);
 
-    if (draw_style == 'LineFactory') {
-      var shape_n = canvas.width + canvas.height;
-    } else {
-      var shape_n = 500;
-    }
+    var overdraw = overdraw_tag.checked;
 
     var shapes = [];
 
-    for (var i = 0; i < shape_n; i++) {
-      var shape = shape_factory.generate(canvas.width, canvas.height);
-      shapes.push(shape);
-      best_ctx.save();
-      shape_factory.draw(best_ctx, shape);
-      best_ctx.restore();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!overdraw) {
+      for (var i = 0; i < shape_n; i++) {
+        var shape = shape_factory.generate(canvas.width, canvas.height);
+        shapes.push(shape);
+        shape_factory.draw(best_ctx, shape);
+      }
     }
 
     var best_score = get_score(img_data, best_ctx.getImageData(0, 0, canvas.width, canvas.height));
 
     var generation_tag = document.getElementById('generation');
-    var show_tries_tag = document.getElementById('show_tries');
 
     var step = function() {
       if (!generating) {
@@ -217,14 +232,18 @@ document.addEventListener('DOMContentLoaded', function() {
       curr_canvas.height = canvas.height;
       curr_ctx = curr_canvas.getContext('2d');
 
-      var random_i = Math.floor(Math.random() * shape_n);
-      var old_shape = shapes[random_i];
-      shapes[random_i] = shape_factory.generate(canvas.width, canvas.height);
+      if (!overdraw) {
+        var random_i = Math.floor(Math.random() * shape_n);
+        var old_shape = shapes[random_i];
+        shapes[random_i] = shape_factory.generate(canvas.width, canvas.height);
 
-      for (var i = 0; i < shape_n; i++) {
-        curr_ctx.save();
-        shape_factory.draw(curr_ctx, shapes[i]);
-        curr_ctx.restore();
+        for (var i = 0; i < shape_n; i++) {
+          shape_factory.draw(curr_ctx, shapes[i]);
+        }
+      } else {
+        curr_ctx.drawImage(canvas, 0, 0);
+        var shape = shape_factory.generate(canvas.width, canvas.height);
+        shape_factory.draw(curr_ctx, shape);
       }
 
       var curr_img_data = curr_ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -235,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.putImageData(curr_img_data, 0, 0);
       } else {
         shapes[random_i] = old_shape;
-        if (show_tries.checked) {
+        if (show_tries_tag.checked) {
           ctx.putImageData(curr_img_data, 0, 0);
         }
       }
