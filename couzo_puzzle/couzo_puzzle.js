@@ -314,6 +314,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   setup_context(game);
 
+  document.getElementById('solve_button').addEventListener("click", function() {
+    game.undo_history = [];
+    game.data = game.solution.slice();
+    game.draw();
+  });
+
   document.getElementById("undo_button").addEventListener("click", function() {
     game.undo();
     game.draw();
