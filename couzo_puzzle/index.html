@@ -14,10 +14,13 @@
             html, body {
                 background-color: #F5F5DD;
             }
-            #shuffle {
+            #menu, #menu_button {
                 position: absolute;
                 right: 10px;
                 top: 10px;
+            }
+            a:first-letter {
+                text-transform: capitalize;
             }
             canvas {
                 padding-left: 0;
@@ -25,6 +28,9 @@
                 margin-left: auto;
                 margin-right: auto;
                 display: block;
+            }
+            .dropdown-menu {
+                min-width: 0px !important;
             }
             * {
                 outline: none;
@@ -42,17 +48,32 @@
         </script>
     </head>
     <body>
-        <span id="top-left"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a></span>
+        <div id="top-left">
+            <a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a>
+            <br><br>
+        </div>
+
         <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
         <div id="undo_div" style="position: fixed; bottom: 10px; right: 10px;">
             <i id="undo_button" class="fa fa-undo fa-5x" aria-hidden="true" style="cursor: pointer"></i>
             <center>Undo</center>
         </div>
-        <div id="shuffle">
+        <i id="menu_button" class="fa fa-bars fa-5x" aria-hidden="true" style="cursor: pointer"></i>
+        <div id="menu" style="visibility: hidden">
             <button class="btn" id="solve_button">Solve</button>
-            <button class="btn" id="shuffle_button_easy">Easy</button>
-            <button class="btn" id="shuffle_button_medium">Medium</button>
-            <button class="btn" id="shuffle_button_hard">Hard</button>
+            <button class="btn" id="shuffle_button">Shuffle</button>
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="difficulty_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="width: 100%">
+                    Difficulty
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="difficulty_dropdown">
+                    <li><a href="#" class="difficulty-choice" data-shuffles="10">Easy</a></li>
+                    <li><a href="#" class="difficulty-choice" data-shuffles="25">Medium</a></li>
+                    <li><a href="#" class="difficulty-choice" data-shuffles="250">Hard</a></li>
+                </ul>
+            </div>
+            <div id="game_modes" class="list-group"></div>
         </div>
         <div style="position: fixed; bottom: 0px; left: 0px;">
             <div class="col-md-4 col-xs-6">
