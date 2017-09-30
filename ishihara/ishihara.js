@@ -61,6 +61,11 @@ CircleFactory.prototype.draw = function(ctx, circle) {
   ctx.closePath();
 };
 
+CircleFactory.prototype.svg = function(circle, style) {
+  return '<circle cx="' + circle.x + '" cy="' + circle.y + '" ' +
+         'r="' + circle.radius * this.options.draw_ratio + '" fill="' + style + '" />';
+};
+
 function RegularPolygonFactory(options) {
   this.options = options;
 }
@@ -131,6 +136,16 @@ RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
   }
   ctx.closePath();
   ctx.fill();
+};
+
+RegularPolygonFactory.prototype.svg = function(polygon, style) {
+  var points = [];
+  for (var i = 0; i < polygon.points.length; i++) {
+    points.push(
+      (polygon.x + polygon.points[i].x * this.options.draw_ratio) + ',' +
+      (polygon.y + polygon.points[i].y * this.options.draw_ratio));
+  }
+  return '<polygon points="' + points.join(' ') + '" fill="' + style + '" />';
 };
 
 function CrossFactory() {
@@ -213,6 +228,16 @@ StarFactory.prototype.generate = function(circular_area) {
   return polygons;
 };
 
+function download(filename, data) {
+  var link = document.createElement('a');
+  link.setAttribute('href', data);
+  link.setAttribute('download', filename);
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
@@ -234,6 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   img_ctx.fillStyle = "white";
   img_ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  var svg_elements = []
 
   var ishihara_input = {
     load_image: function() {
@@ -276,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }[ishihara_input.shape_factory];
       shape_factory = new shape_factory(JSON.parse(JSON.stringify(ishihara_input)));
 
+      svg_elements = []
       var tree = new kdTree([], function(a, b) {
         return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
       }, ['x', 'y']);
@@ -328,6 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
           for (var i = 0; i < shapes.length; i++) {
             shape_factory.draw(ctx, shapes[i]);
             tree.insert(shapes[i]);
+            svg_elements.push(shape_factory.svg(shapes[i], ctx.fillStyle))
           }
         }
 
@@ -355,6 +384,18 @@ document.addEventListener('DOMContentLoaded', function() {
       hide_gui_element('generate', false);
       hide_gui_element('clear', false);
       hide_gui_element('stop', true);
+    },
+    download_png: function() {
+      download('ishihara.png', canvas.toDataURL('image/png'))
+    },
+    download_svg: function() {
+      var data = [
+        '<?xml version="1.0" encoding="UTF-8" ?>',
+        '<svg width="' + canvas.width + '" height="' + canvas.height + '" ' +
+        '  viewBox="0 0 ' + canvas.width + ' ' + canvas.height + '" ' +
+        '  xmlns="http://www.w3.org/2000/svg" version="1.1">'
+      ].concat(svg_elements, '</svg>').join('\n');
+      download('ishihara.svg', 'data:image/svg+xml,' + encodeURIComponent(data));
     }
   };
 
@@ -385,6 +426,8 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(ishihara_input, 'generate').name("Generate");
   gui.add(ishihara_input, 'clear').name("Clear");
   gui.add(ishihara_input, 'stop').name("Stop");
+  gui.add(ishihara_input, 'download_png').name("Download PNG");
+  gui.add(ishihara_input, 'download_svg').name("Download SVG");
 
   var hide_gui_element = function(property, hide) {
     for (var i = 0; i < gui.__controllers.length; i++) {
