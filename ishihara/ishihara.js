@@ -1,5 +1,7 @@
 'use strict';
 
+var PIXEL_RATIO = window.devicePixelRatio || 1;
+
 function download(filename, data) {
   var link = document.createElement('a');
   link.setAttribute('href', data);
@@ -14,8 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
 
-  var max_width  = window.innerWidth;
-  var max_height = window.innerHeight;
+  var max_width  = window.innerWidth  * PIXEL_RATIO;
+  var max_height = window.innerHeight * PIXEL_RATIO;
+
+  ctx.canvas.style.width  = window.innerWidth  + 'px'
+  ctx.canvas.style.height = window.innerHeight + 'px'
 
   ctx.canvas.width  = max_width;
   ctx.canvas.height = max_height;
@@ -187,43 +192,60 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.closePath();
   };
 
+  var mousedown = function(mx, my, style) {
+    painting = true;
+
+    x = mx;
+    y = my;
+
+    if (generating) return;
+
+    hand_draw(ctx, style, x, y);
+    hand_draw(img_ctx, style, x, y);
+  };
   canvas.addEventListener('mousedown', function(e) {
     if (e.button === 0) {
-      painting = true;
-
-      x = e.pageX - this.offsetLeft;
-      y = e.pageY - this.offsetTop;
-
-      if (generating) return;
-
-      hand_draw(ctx, e.ctrlKey ? '#FFF' : '#000', x, y)
-      hand_draw(img_ctx, e.ctrlKey ? '#FFF' : '#000', x, y)
+      mousedown(e.pageX * PIXEL_RATIO, e.pageY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
     }
   });
+  canvas.addEventListener('touchstart', function(e) {
+    mousedown(e.touches[0].clientX * PIXEL_RATIO, e.touches[0].clientY * PIXEL_RATIO, '#000');
+  });
 
+  var mouseup = function(mx, my, style) {
+    painting = false;
+
+    x = mx;
+    y = mx;
+
+    if (generating) return;
+
+    hand_draw(ctx, style, x, y);
+    hand_draw(img_ctx, style, x, y);
+  };
   canvas.addEventListener('mouseup', function(e) {
     if (e.button === 0) {
-      painting = false;
-
-      x = e.pageX - this.offsetLeft;
-      y = e.pageY - this.offsetTop;
-
-      if (generating) return;
-
-      hand_draw(ctx, e.ctrlKey ? '#FFF' : '#000', x, y)
-      hand_draw(img_ctx, e.ctrlKey ? '#FFF' : '#000', x, y)
+      mouseup(e.pageX * PIXEL_RATIO, y = e.pageY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
     }
   });
-  canvas.addEventListener('mousemove', function(e) {
-    if (!painting || generating) return;
-    var curr_x = e.pageX - this.offsetLeft;
-    var curr_y = e.pageY - this.offsetTop;
+  canvas.addEventListener('touchend', function(e) {
+    mouseup(e.touches[0].clientX * PIXEL_RATIO, e.touches[0].clientY * PIXEL_RATIO, '#000');
+  });
 
-    hand_draw(ctx, e.ctrlKey ? '#FFF' : '#000', curr_x, curr_y, x, y)
-    hand_draw(img_ctx, e.ctrlKey ? '#FFF' : '#000', curr_x, curr_y, x, y)
+  var mousemove = function(curr_x, curr_y, style) {
+    if (!painting || generating) return;
+
+    hand_draw(ctx, style, curr_x, curr_y, x, y);
+    hand_draw(img_ctx, style, curr_x, curr_y, x, y);
 
     x = curr_x;
     y = curr_y;
+  };
+  canvas.addEventListener('mousemove', function(e) {
+    mousemove(e.pageX * PIXEL_RATIO, e.pageY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
+  });
+  canvas.addEventListener('touchmove', function(e) {
+    mousemove(e.touches[0].clientX * PIXEL_RATIO, e.touches[0].clientY * PIXEL_RATIO, '#000');
   });
 
   image_upload.addEventListener('change', function(e) {
