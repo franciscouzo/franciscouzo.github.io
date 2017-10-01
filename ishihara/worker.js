@@ -80,9 +80,8 @@ onmessage = function(e) {
     for (var i = 0; i < shapes.length; i++) {
       postMessage({action: 'shape', shape: shapes[i], style: style});
       tree.insert(shapes[i]);
-      //svg_elements.push(shape_factory.svg(shapes[i], ctx.fillStyle))
     }
   }
 
-  postMessage({action: 'stop'})
+  postMessage({action: 'stop'});
 };
