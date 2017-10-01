@@ -632,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     canvas.addEventListener('mousedown', function(e) {
         if (e.which == 1) {
-        onclick(e.pageX * PIXEL_RATIO, e.pageY * PIXEL_RATIO, true)
+            onclick(e.pageX * PIXEL_RATIO, e.pageY * PIXEL_RATIO, true)
         }
         return false
     })
