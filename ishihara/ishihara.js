@@ -1,233 +1,5 @@
 'use strict';
 
-function CircleFactory(options) {
-  this.options = options;
-}
-
-CircleFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
-    var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (canvas.width  - radius * 2);
-    var y = radius + Math.random() * (canvas.height - radius * 2);
-  }
-
-  return [{x: x, y: y, radius: radius}];
-};
-
-CircleFactory.prototype.overlaps_image = function(img_data, circle) {
-  var x = circle.x;
-  var y = circle.y;
-  var r = circle.radius;
-
-  var points_x = [x, x, x, x-r, x+r, x-r*0.93, x-r*0.93, x+r*0.93, x+r*0.93];
-  var points_y = [y, y-r, y+r, y, y, y+r*0.93, y-r*0.93, y+r*0.93, y-r*0.93];
-
-  for (var i = 0; i < points_x.length; i++) {
-    var x = points_x[i];
-    var y = points_y[i];
-
-    var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
-
-    var r = img_data.data[index];
-    var g = img_data.data[index + 1];
-    var b = img_data.data[index + 2];
-    var a = img_data.data[index + 3];
-
-    if ((r + g + b) * (a / 255) < 127) {
-      return true;
-    }
-  }
-  return false;
-};
-
-CircleFactory.prototype.intersects = function(circle1, circle2) {
-  return Math.pow(circle2.x - circle1.x, 2) +
-         Math.pow(circle2.y - circle1.y, 2) <
-         Math.pow(circle1.radius + circle2.radius, 2);
-};
-
-CircleFactory.prototype.draw = function(ctx, circle) {
-  ctx.beginPath();
-  ctx.arc(circle.x, circle.y, circle.radius * this.options.draw_ratio, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.closePath();
-};
-
-CircleFactory.prototype.svg = function(circle, style) {
-  return '<circle cx="' + circle.x + '" cy="' + circle.y + '" ' +
-         'r="' + circle.radius * this.options.draw_ratio + '" fill="' + style + '" />';
-};
-
-function RegularPolygonFactory(options) {
-  this.options = options;
-}
-
-RegularPolygonFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
-    var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (canvas.width  - radius * 2);
-    var y = radius + Math.random() * (canvas.height - radius * 2);
-  }
-
-  var polygon = new Polygon(x, y);
-  for (var i = 0; i < this.options.sides; i++) {
-    polygon.addPoint({
-      x: Math.cos(Math.PI * 2 * (i / this.options.sides)) * radius,
-      y: Math.sin(Math.PI * 2 * (i / this.options.sides)) * radius,
-    });
-  }
-  polygon.rotate(Math.random() * 2 * Math.PI);
-
-  return [polygon];
-};
-
-RegularPolygonFactory.prototype.overlaps_image = function(img_data, polygon) {
-  var points = polygon.points.concat({x: polygon.x, y: polygon.y});
-
-  for (var i = 0; i < points.length; i++) {
-    var x = points[i].x;
-    var y = points[i].y;
-
-    var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
-
-    var r = img_data.data[index];
-    var g = img_data.data[index + 1];
-    var b = img_data.data[index + 2];
-    var a = img_data.data[index + 3];
-
-    if ((r + g + b) * (a / 255) < 127) {
-      return true;
-    }
-  }
-  return false;
-};
-
-RegularPolygonFactory.prototype.intersects = function(polygon1, polygon2) {
-  return polygon1.intersectsWith(polygon2);
-};
-
-RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
-  ctx.beginPath();
-  ctx.moveTo(
-    polygon.x + polygon.points[0].x * this.options.draw_ratio,
-    polygon.y + polygon.points[0].y * this.options.draw_ratio
-  );
-  for (var i = 1; i < polygon.points.length; i++) {
-    ctx.lineTo(
-      polygon.x + polygon.points[i].x * this.options.draw_ratio,
-      polygon.y + polygon.points[i].y * this.options.draw_ratio
-    );
-  }
-  ctx.closePath();
-  ctx.fill();
-};
-
-RegularPolygonFactory.prototype.svg = function(polygon, style) {
-  var points = [];
-  for (var i = 0; i < polygon.points.length; i++) {
-    points.push(
-      (polygon.x + polygon.points[i].x * this.options.draw_ratio) + ',' +
-      (polygon.y + polygon.points[i].y * this.options.draw_ratio));
-  }
-  return '<polygon points="' + points.join(' ') + '" fill="' + style + '" />';
-};
-
-function CrossFactory() {
-  RegularPolygonFactory.apply(this, arguments);
-}
-
-CrossFactory.prototype = Object.create(RegularPolygonFactory.prototype);
-CrossFactory.prototype.constructor = RegularPolygonFactory;
-
-CrossFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
-    var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (canvas.width  - radius * 2);
-    var y = radius + Math.random() * (canvas.height - radius * 2);
-  }
-
-  var polygon1 = new Polygon(x, y);
-  var polygon2 = new Polygon(x, y);
-
-  polygon1.addPoint({x: -radius, y: -(1 - this.options.pointiness) * radius})
-  polygon1.addPoint({x:  radius, y: -(1 - this.options.pointiness) * radius})
-  polygon1.addPoint({x:  radius, y:  (1 - this.options.pointiness) * radius})
-  polygon1.addPoint({x: -radius, y:  (1 - this.options.pointiness) * radius})
-
-  polygon2.addPoint({x: -radius, y: -(1 - this.options.pointiness) * radius})
-  polygon2.addPoint({x:  radius, y: -(1 - this.options.pointiness) * radius})
-  polygon2.addPoint({x:  radius, y:  (1 - this.options.pointiness) * radius})
-  polygon2.addPoint({x: -radius, y:  (1 - this.options.pointiness) * radius})
-
-  var rot = Math.random() * 2 * Math.PI;
-  polygon1.rotate(rot);
-  polygon2.rotate(rot + Math.PI / 2);
-
-  return [polygon1, polygon2];
-};
-
-function StarFactory() {
-  RegularPolygonFactory.apply(this, arguments);
-}
-
-StarFactory.prototype = Object.create(RegularPolygonFactory.prototype);
-StarFactory.prototype.constructor = RegularPolygonFactory;
-
-StarFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(canvas.width, canvas.height) * 0.48 - radius);
-    var x = canvas.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = canvas.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (canvas.width  - radius * 2);
-    var y = radius + Math.random() * (canvas.height - radius * 2);
-  }
-
-  var rot = Math.random() * 2 * Math.PI;
-  var polygons = [];
-
-  for (var i = 0; i < this.options.sides; i++) {
-    var polygon = new Polygon(x, y);
-    polygon.addPoint({x: -(1 - this.options.pointiness) * radius, y: 0});
-    polygon.addPoint({x:  (1 - this.options.pointiness) * radius, y: 0});
-    polygon.addPoint({x:  0,                                      y: radius});
-
-    polygon.rotate((i / this.options.sides) * Math.PI * 2 + rot);
-    polygons.push(polygon);
-  }
-
-  return polygons;
-};
-
 function download(filename, data) {
   var link = document.createElement('a');
   link.setAttribute('href', data);
@@ -260,7 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
   img_ctx.fillStyle = "white";
   img_ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  var svg_elements = []
+  var svg_elements = [];
+  var worker;
 
   var ishihara_input = {
     load_image: function() {
@@ -271,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
     resize: true,
     invert_colors: false,
     style: 0,
-    speed: 100,
     min_radius: (canvas.width + canvas.height) / 600,
     max_radius: (canvas.width + canvas.height) / 150,
     draw_ratio: 1,
@@ -286,11 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       generating = true;
 
-      var circular_area = ishihara_input.circular;
-      var invert_colors = ishihara_input.invert_colors;
-
-      var draw_style = Number(ishihara_input.style);
-
       var img_data = img_ctx.getImageData(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -303,74 +70,31 @@ document.addEventListener('DOMContentLoaded', function() {
       }[ishihara_input.shape_factory];
       shape_factory = new shape_factory(JSON.parse(JSON.stringify(ishihara_input)));
 
-      svg_elements = []
-      var tree = new kdTree([], function(a, b) {
-        return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
-      }, ['x', 'y']);
+      svg_elements = [];
 
-      var failed_in_row = 0;
-
-      var check_nearest = Math.ceil(
-        Math.max(ishihara_input.min_radius, ishihara_input.max_radius) /
-        Math.min(ishihara_input.min_radius, ishihara_input.max_radius) * 5);
-
-      var step = function() {
-        if (!generating) {
-          return;
+      var options = {};
+      for (var k in ishihara_input) {
+        if (typeof ishihara_input[k] !== "function") {
+          options[k] = ishihara_input[k];
         }
+      }
 
-        outer:
-        for (var tries = 0; tries < ishihara_input.speed; tries++) {
-          var shapes = shape_factory.generate(circular_area);
+      options.img_data = img_data;
+      options.width = canvas.width;
+      options.height = canvas.height;
 
-          for (var i = 0; i < shapes.length; i++) {
-            var shape = shapes[i];
+      worker = new Worker('worker.js');
+      worker.postMessage(options);
 
-            var nearest = tree.nearest(shape, check_nearest);
-            for (var j = 0; j < nearest.length; j++) {
-              var near_shape = nearest[j][0];
-              if (shape_factory.intersects(shape, near_shape)) {
-                failed_in_row++;
-                continue outer;
-              }
-            }
-          }
-
-          failed_in_row = 0;
-
-          var overlaps_image = false;
-
-          for (var i = 0; i < shapes.length; i++) {
-            if (shape_factory.overlaps_image(img_data, shapes[i])) {
-              overlaps_image = true;
-              break;
-            }
-          }
-
-          if (overlaps_image !== invert_colors) {
-            ctx.fillStyle = colors_on[draw_style][Math.floor(Math.random() * colors_on[draw_style].length)];
-          } else {
-            ctx.fillStyle = colors_off[draw_style][Math.floor(Math.random() * colors_off[draw_style].length)];
-          }
-
-          for (var i = 0; i < shapes.length; i++) {
-            shape_factory.draw(ctx, shapes[i]);
-            tree.insert(shapes[i]);
-            svg_elements.push(shape_factory.svg(shapes[i], ctx.fillStyle))
-          }
+      worker.addEventListener('message', function(e) {
+        if (e.data.action === 'shape') {
+          ctx.fillStyle = e.data.style;
+          shape_factory.draw(ctx, e.data.shape);
+          svg_elements.push(shape_factory.svg(e.data.shape, e.data.style));
+        } else if (e.data.action === 'stop') {
+          ishihara_input.stop();
         }
-
-        if (failed_in_row >= ishihara_input.stop_after) {
-          generating = false;
-          hide_gui_element('generate', false);
-          hide_gui_element('clear', false);
-          hide_gui_element('stop', true);
-        } else {
-          requestAnimationFrame(step);
-        }
-      };
-
-      requestAnimationFrame(step);
+      })
     },
     clear: function() {
       ctx.fillStyle = "white";
@@ -379,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
       img_ctx.fillRect(0, 0, canvas.width, canvas.height);
     },
     stop: function() {
+      worker.terminate();
       generating = false;
 
       hide_gui_element('generate', false);
@@ -414,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function() {
     'General 1': 0, 'General 2': 1, 'General 3': 2, 'Protanopia': 3,
     'Protanomaly': 4, 'Viewable by all': 5, 'Colorblind only': 6
   }).name("Style");
-  gui.add(ishihara_input, 'speed', 10, 1000).name("Speed");
   gui.add(ishihara_input, 'min_radius', 2, 50).name("Min radius").onChange(function() {
     ishihara_input.max_radius = Math.max(ishihara_input.min_radius, ishihara_input.max_radius);
   }).listen();
@@ -442,25 +166,6 @@ document.addEventListener('DOMContentLoaded', function() {
   hide_gui_element('sides', true);
   hide_gui_element('pointiness', true);
   hide_gui_element('stop', true);
-
-  var colors_on = [
-    ['#F9BB82', '#EBA170', '#FCCD84'],
-    ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674'],
-    ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674', '#FECB05'],
-    ['#E96B6C', '#F7989C'],
-    ['#AD5277', '#F7989C'],
-    ['#FF934F'],
-    ['#A8AA00', '#83BE28']
-  ];
-  var colors_off =  [
-    ['#9CA594', '#ACB4A5', '#BBB964', '#D7DAAA', '#E5D57D', '#D1D6AF'],
-    ['#F49427', '#C9785D', '#E88C6A', '#F1B081'],
-    ['#F49427', '#C9785D', '#E88C6A', '#F1B081', '#FFCE00'],
-    ['#635A4A', '#817865', '#9C9C84'],
-    ['#635A4A', '#817865', '#9C9C84'],
-    ['#9C9C9C'],
-    ['#828200', '#669A1B', '#828200', '#669A1B', '#ED6311']
-  ];
 
   var painting = false;
   var generating = false;
