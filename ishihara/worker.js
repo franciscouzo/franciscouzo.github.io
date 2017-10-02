@@ -69,13 +69,11 @@ onmessage = function(e) {
       overlaps_image = points_overlapping !== 0;
 
       if (options.edge_detection) {
-        if (points_overlapping !== 0 && points_overlapping !== total_points) {
+        if (overlaps_image && points_overlapping !== total_points) {
           continue outer;
         }
-      } else {
-        if (overlaps_image) {
-          break;
-        }
+      } else if (overlaps_image) {
+        break;
       }
     }
 
