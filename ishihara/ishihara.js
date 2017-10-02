@@ -209,18 +209,23 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   canvas.addEventListener('mousedown', function(e) {
     if (e.button === 0) {
-      mousedown(e.pageX * PIXEL_RATIO, e.pageY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
+      mousedown(e.offsetX * PIXEL_RATIO, e.offsetY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
     }
   });
   canvas.addEventListener('touchstart', function(e) {
-    mousedown(e.touches[0].clientX * PIXEL_RATIO, e.touches[0].clientY * PIXEL_RATIO, '#000');
+    var rect = canvas.getBoundingClientRect();
+    mousedown(
+      (e.touches[0].clientX - rect.left) * PIXEL_RATIO,
+      (e.touches[0].clientY - rect.top)  * PIXEL_RATIO,
+      '#000'
+    );
   });
 
   var mouseup = function(mx, my, style) {
     painting = false;
 
     x = mx;
-    y = mx;
+    y = my;
 
     if (generating) return;
 
@@ -229,11 +234,16 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   canvas.addEventListener('mouseup', function(e) {
     if (e.button === 0) {
-      mouseup(e.pageX * PIXEL_RATIO, y = e.pageY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
+      mouseup(e.offsetX * PIXEL_RATIO, e.offsetY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
     }
   });
   canvas.addEventListener('touchend', function(e) {
-    mouseup(e.touches[0].clientX * PIXEL_RATIO, e.touches[0].clientY * PIXEL_RATIO, '#000');
+    var rect = canvas.getBoundingClientRect();
+    mouseup(
+      (e.touches[0].clientX - rect.left) * PIXEL_RATIO,
+      (e.touches[0].clientY - rect.top)  * PIXEL_RATIO,
+      '#000'
+    );
   });
 
   var mousemove = function(curr_x, curr_y, style) {
@@ -246,10 +256,15 @@ document.addEventListener('DOMContentLoaded', function() {
     y = curr_y;
   };
   canvas.addEventListener('mousemove', function(e) {
-    mousemove(e.pageX * PIXEL_RATIO, e.pageY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
+    mousemove(e.offsetX * PIXEL_RATIO, e.offsetY * PIXEL_RATIO, e.ctrlKey ? '#FFF' : '#000');
   });
   canvas.addEventListener('touchmove', function(e) {
-    mousemove(e.touches[0].clientX * PIXEL_RATIO, e.touches[0].clientY * PIXEL_RATIO, '#000');
+    var rect = canvas.getBoundingClientRect();
+    mousemove(
+      (e.touches[0].clientX - rect.left) * PIXEL_RATIO,
+      (e.touches[0].clientY - rect.top)  * PIXEL_RATIO,
+      '#000'
+    );
   });
 
   image_upload.addEventListener('change', function(e) {
@@ -269,8 +284,8 @@ document.addEventListener('DOMContentLoaded', function() {
           canvas.height = img.height;
         }
 
-        canvas.style.width  = canvas.width  + 'px'
-        canvas.style.height = canvas.height + 'px'
+        canvas.style.width  = canvas.width  / PIXEL_RATIO + 'px'
+        canvas.style.height = canvas.height / PIXEL_RATIO + 'px'
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
