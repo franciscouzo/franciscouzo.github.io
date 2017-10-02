@@ -262,6 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
           canvas.width = img.width;
           canvas.height = img.height;
         }
+
+        canvas.style.width  = canvas.width  + 'px'
+        canvas.style.height = canvas.height + 'px'
+
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         img_canvas.width = canvas.width;
