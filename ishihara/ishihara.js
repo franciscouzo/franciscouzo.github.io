@@ -122,8 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var data = [
         '<?xml version="1.0" encoding="UTF-8" ?>',
         '<svg width="' + canvas.width + '" height="' + canvas.height + '" ' +
-        '  viewBox="0 0 ' + canvas.width + ' ' + canvas.height + '" ' +
-        '  xmlns="http://www.w3.org/2000/svg" version="1.1">'
+        'viewBox="0 0 ' + canvas.width + ' ' + canvas.height + '" ' +
+        'xmlns="http://www.w3.org/2000/svg" version="1.1">'
       ].concat(svg_elements, '</svg>').join('\n');
       download('ishihara.svg', 'data:image/svg+xml,' + encodeURIComponent(data));
     }
