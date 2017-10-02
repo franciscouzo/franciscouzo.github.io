@@ -97,7 +97,13 @@ RegularPolygonFactory.prototype.generate = function(circular_area) {
 };
 
 RegularPolygonFactory.prototype.overlaps_image = function(img_data, polygon) {
-  var points = polygon.points.concat({x: polygon.x, y: polygon.y});
+  var points = [{x: polygon.x, y: polygon.y}];
+  for (var i = 0; i < polygon.points.length; i++) {
+    points.push({
+      x: polygon.x + polygon.points[i].x,
+      y: polygon.y + polygon.points[i].y,
+    });
+  }
   var points_overlapping = 0;
 
   for (var i = 0; i < points.length; i++) {
