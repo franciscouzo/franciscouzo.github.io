@@ -1,5 +1,7 @@
 'use strict';
 
+var PIXEL_RATIO = window.devicePixelRatio || 1;
+
 var CELL_SIZE = 4;
 var CELL_SPACING = 4;
 
@@ -552,8 +554,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.style.width  = window.innerWidth  + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+
+  canvas.width  = window.innerWidth  * PIXEL_RATIO;
+  canvas.height = window.innerHeight * PIXEL_RATIO;
 
   ctx.fillStyle = maze_input.background_color;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
