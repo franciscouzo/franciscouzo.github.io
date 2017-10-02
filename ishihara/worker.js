@@ -37,14 +37,15 @@ onmessage = function(e) {
     return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
   }, ['x', 'y']);
 
-  var failed_in_row = 0;
+  var tries = 0;
 
   var check_nearest = Math.ceil(
     Math.max(options.min_radius, options.max_radius) /
     Math.min(options.min_radius, options.max_radius) * 5);
 
   outer:
-  while (failed_in_row < options.stop_after) {
+  while (tries < options.stop_after) {
+    tries++;
     var shapes = shape_factory.generate(options.circular);
 
     for (var i = 0; i < shapes.length; i++) {
@@ -54,22 +55,31 @@ onmessage = function(e) {
       for (var j = 0; j < nearest.length; j++) {
         var near_shape = nearest[j][0];
         if (shape_factory.intersects(shape, near_shape)) {
-          failed_in_row++;
           continue outer;
         }
       }
     }
 
-    failed_in_row = 0;
-
     var overlaps_image = false;
-
     for (var i = 0; i < shapes.length; i++) {
-      if (shape_factory.overlaps_image(options.img_data, shapes[i])) {
-        overlaps_image = true;
-        break;
+      var overlap = shape_factory.overlaps_image(options.img_data, shapes[i]);
+      var total_points = overlap[0];
+      var points_overlapping = overlap[1];
+
+      overlaps_image = points_overlapping !== 0;
+
+      if (options.edge_detection) {
+        if (points_overlapping !== 0 && points_overlapping !== total_points) {
+          continue outer;
+        }
+      } else {
+        if (overlaps_image) {
+          break;
+        }
       }
     }
+
+    tries = 0;
 
     if (overlaps_image !== options.invert_colors) {
       var style = colors_on[draw_style][Math.floor(Math.random() * colors_on[draw_style].length)];

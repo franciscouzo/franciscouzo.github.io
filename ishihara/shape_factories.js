@@ -21,29 +21,30 @@ CircleFactory.prototype.generate = function(circular_area) {
 };
 
 CircleFactory.prototype.overlaps_image = function(img_data, circle) {
-  var x = circle.x;
-  var y = circle.y;
-  var r = circle.radius;
+  var total_points = 0;
+  var points_overlapping = 0;
 
-  var points_x = [x, x, x, x-r, x+r, x-r*0.93, x-r*0.93, x+r*0.93, x+r*0.93];
-  var points_y = [y, y-r, y+r, y, y, y+r*0.93, y-r*0.93, y+r*0.93, y-r*0.93];
+  for (var i = 0; i <= circle.radius; i++) {
+    for (var radius = 0; radius <= circle.radius; radius++) {
+      total_points++;
 
-  for (var i = 0; i < points_x.length; i++) {
-    var x = points_x[i];
-    var y = points_y[i];
+      var x = circle.x + Math.cos(i * Math.PI * 2) * radius;
+      var y = circle.y + Math.sin(i * Math.PI * 2) * radius;
 
-    var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
+      var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
 
-    var r = img_data.data[index];
-    var g = img_data.data[index + 1];
-    var b = img_data.data[index + 2];
-    var a = img_data.data[index + 3];
+      var r = img_data.data[index];
+      var g = img_data.data[index + 1];
+      var b = img_data.data[index + 2];
+      var a = img_data.data[index + 3];
 
-    if ((r + g + b) * (a / 255) < 127) {
-      return true;
+      if ((r + g + b) * (a / 255) < 127) {
+        points_overlapping++;
+      }
     }
   }
-  return false;
+
+  return [total_points, points_overlapping];
 };
 
 CircleFactory.prototype.intersects = function(circle1, circle2) {
@@ -97,6 +98,7 @@ RegularPolygonFactory.prototype.generate = function(circular_area) {
 
 RegularPolygonFactory.prototype.overlaps_image = function(img_data, polygon) {
   var points = polygon.points.concat({x: polygon.x, y: polygon.y});
+  var points_overlapping = 0;
 
   for (var i = 0; i < points.length; i++) {
     var x = points[i].x;
@@ -110,10 +112,10 @@ RegularPolygonFactory.prototype.overlaps_image = function(img_data, polygon) {
     var a = img_data.data[index + 3];
 
     if ((r + g + b) * (a / 255) < 127) {
-      return true;
+      points_overlapping++;
     }
   }
-  return false;
+  return [points.length, points_overlapping];
 };
 
 RegularPolygonFactory.prototype.intersects = function(polygon1, polygon2) {

@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     circular: true,
     resize: true,
+    edge_detection: true,
     invert_colors: false,
     style: 0,
     min_radius: (canvas.width + canvas.height) / 600,
@@ -133,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(ishihara_input, 'load_image').name("Load image");
   gui.add(ishihara_input, 'circular').name("Circular");
   gui.add(ishihara_input, 'resize').name("Resize");
+  gui.add(ishihara_input, 'edge_detection').name("Edge detection");
   gui.add(ishihara_input, 'invert_colors').name("Invert colors");
   gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star']).onChange(function(value) {
     hide_gui_element('sides', value !== 'Regular polygon' && value !== 'Star');
