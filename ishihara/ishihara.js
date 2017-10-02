@@ -109,7 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
       img_ctx.fillRect(0, 0, canvas.width, canvas.height);
     },
     stop: function() {
-      worker.terminate();
+      if (worker) {
+        worker.terminate();
+      }
       generating = false;
 
       hide_gui_element('generate', false);
@@ -251,6 +253,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   image_upload.addEventListener('change', function(e) {
+    ishihara_input.stop();
+
     var reader = new FileReader();
     reader.onload = function(event) {
       var img = new Image();
