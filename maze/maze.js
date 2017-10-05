@@ -20,6 +20,10 @@ function shuffle(array, start, end) {
   }
 }
 
+function random_choice(arr) {
+  return arr[Math.floor(random() * arr.length)];
+}
+
 var SG_MAGICCONST = 1.0 + Math.log(4.5);
 var LOG4 = Math.log(4.0);
 
@@ -119,7 +123,7 @@ MazeDrawer.prototype.fill_south = function(x, y) {
 }
 
 
-function RandomTraversalMaze(width, height, start, maze_drawer, canvas_context) {
+function RandomTraversalMaze(width, height, start, maze_drawer) {
   this.width = width;
   this.height = height;
   this.cells = [];
@@ -424,6 +428,187 @@ MixedMaze.prototype.pop = function() {
 };
 
 
+function RandomWalkMaze(width, height, start, maze_drawer) {
+  this.width = width;
+  this.height = height;
+  this.start = start;
+
+  this.path = [];
+
+  for (var y = 0; y < height; y++) {
+    if (y % 2 == 0) {
+      for (var x = 0; x < width; x++) {
+        this.path.push([x, y]);
+      }
+    } else {
+      for (var x = width - 1; x >= 0 ; x--) {
+        this.path.push([x, y]);
+      }
+    }
+  }
+
+  this.visited = [];
+  for (var y = 0; y < height; y++) {
+    this.visited.push([]);
+    for (var x = 0; x < width; x++) {
+      this.visited[y].push(false);
+    }
+  }
+
+  this.visited[0][0] = true;
+  this.visited[this.height - 1][this.width - 1] = true;
+  this.total_visited = 2;
+
+  this.maze_drawer = maze_drawer;
+
+  this.draw_path(false, true);
+}
+
+RandomWalkMaze.prototype.reverse_path = function(i1, i2) {
+  var jlim = (i2 - i1 + 1) / 2;
+  var temp;
+  for (var j = 0; j < jlim; j++) {
+    temp = this.path[i1 + j];
+    this.path[i1+j] = this.path[i2 - j];
+    this.path[i2-j] = temp;
+  }
+};
+
+RandomWalkMaze.prototype.is_inside = function(x, y) {
+  return x >= 0 && x < this.width && y >= 0 && y < this.height;
+};
+
+RandomWalkMaze.prototype.backbite_left = function(step) {
+  var neighbour = [this.path[0][0] + step[0], this.path[0][1] + step[1]];
+  if (!this.is_inside(neighbour[0], neighbour[1])) {
+    return;
+  }
+  for (var j = 1; j < this.path.length; j += 2) {
+    if ((neighbour[0] == this.path[j][0]) && (neighbour[1] == this.path[j][1])) {
+      this.reverse_path(0, j - 1);
+      return;
+    }
+  }
+};
+
+RandomWalkMaze.prototype.backbite_right = function(step) {
+  var neighbour = [this.path[this.path.length - 1][0] + step[0], this.path[this.path.length - 1][1] + step[1]];
+  if (!this.is_inside(neighbour[0], neighbour[1])) {
+    return;
+  }
+  for (var j = this.path.length - 2; j >= 0; j -= 2) {
+    if ((neighbour[0] == this.path[j][0]) && (neighbour[1] == this.path[j][1])) {
+      this.reverse_path(j + 1, this.path.length - 1);
+      return;
+    }
+  }
+};
+
+RandomWalkMaze.prototype.backbite = function() {
+  var step = random_choice([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+
+  if (random() < 0.5) {
+    this.backbite_left(step);
+  } else {
+    this.backbite_right(step);
+  }
+};
+
+RandomWalkMaze.prototype.draw_path = function(draw_frontier, draw_anyway) {
+  if (CELL_SPACING === 0 && !draw_anyway) {
+    return;
+  }
+  this.maze_drawer.style(maze_input.background_color);
+  this.maze_drawer.ctx.fillRect(0, 0, this.maze_drawer.ctx.canvas.width, this.maze_drawer.ctx.canvas.height);
+
+  this.maze_drawer.style(maze_input.foreground_color);
+  for (var i = 0; i < this.path.length - 1; i++) {
+    if (this.path[i][0] <= this.path[i + 1][0] && this.path[i][1] <= this.path[i + 1][1]) {
+      var x1 = this.path[i][0], y1 = this.path[i][1];
+      var x2 = this.path[i + 1][0], y2 = this.path[i + 1][1];
+    } else {
+      var x1 = this.path[i + 1][0], y1 = this.path[i + 1][1];
+      var x2 = this.path[i][0], y2 = this.path[i][1];
+    }
+
+    this.maze_drawer.fill_cell(x1, y1);
+
+    if (y1 == y2) {
+      this.maze_drawer.fill_east(x1, y1);
+    } else {
+      this.maze_drawer.fill_south(x1, y1);
+      this.maze_drawer.fill_cell(x1, y1 + 1);
+    }
+  }
+
+  if (draw_frontier) {
+    this.maze_drawer.style(maze_input.frontier_color);
+  }
+
+  this.maze_drawer.fill_cell(this.path[0][0], this.path[0][1]);
+  this.maze_drawer.fill_cell(this.path[this.path.length - 1][0], this.path[this.path.length - 1][1]);
+};
+
+RandomWalkMaze.prototype.step = function(draw) {
+  this.backbite();
+
+  if (!this.visited[this.path[0][1]][this.path[0][0]]) {
+    this.visited[this.path[0][1]][this.path[0][0]] = true;
+    this.total_visited++;
+  }
+
+  if (!this.visited[this.path[this.path.length - 1][1]][this.path[this.path.length - 1][0]]) {
+    this.visited[this.path[this.path.length - 1][1]][this.path[this.path.length - 1][0]] = true;
+    this.total_visited++;
+  }
+
+  if (draw) {
+    this.draw_path(true);
+  }
+
+  if (this.width * this.height % 2 == 0 && this.total_visited == this.width * this.height) {
+    return true;
+  }
+  if (this.width * this.height % 2 == 1 && this.total_visited * 2 - 1 === this.width * this.height) {
+    return true;
+  }
+};
+
+RandomWalkMaze.prototype.stop = function() {
+  this.start.x = this.path[0][0];
+  this.start.y = this.path[0][1];
+
+  this.cells = [];
+  for (var y = 0; y < this.height; y++) {
+    this.cells.push([]);
+    for (var x = 0; x < this.width; x++) {
+      this.cells[y].push(0);
+    }
+  }
+
+  for (var i = 0; i < this.path.length - 1; i++) {
+    var x1 = this.path[i][0], y1 = this.path[i][1];
+    var x2 = this.path[i + 1][0], y2 = this.path[i + 1][1];
+
+    if (y2 > y1) {
+      this.cells[y1][x1] |= S;
+      this.cells[y2][x2] |= N;
+    } else if (y2 < y1) {
+      this.cells[y1][x1] |= N;
+      this.cells[y2][x2] |= S;
+    } else if (x2 < x1) {
+      this.cells[y1][x1] |= W;
+      this.cells[y2][x2] |= E;
+    } else {
+      this.cells[y1][x1] |= E;
+      this.cells[y2][x2] |= W;
+    }
+  }
+
+  this.draw_path(false);
+}
+
+
 var maze_input;
 var heap_weights_img;
 
@@ -506,26 +691,23 @@ document.addEventListener('DOMContentLoaded', function() {
                        "Depth first": RandomDepthFirstMaze,
                        "Heap": PrimMaze,
                        "Wilson": WilsonMaze,
-                       "Mixed": MixedMaze}[maze_input.algorithm];
+                       "Mixed": MixedMaze,
+                       "Random walk": RandomWalkMaze}[maze_input.algorithm];
       maze = new algorithm(width, height, start, new MazeDrawer(ctx));
 
-      var steps = width * height / 2500;
       function step() {
+        if (!generating) {
+          return;
+        }
         var speed = maze_input.speed;
-        speed = Math.pow(speed, 1.1);
-        for (var i = 0; i < steps * speed; i++) {
-          if (maze.step()) {
-            hide_gui_element('start', false);
-            hide_gui_element('stop', true);
-            hide_gui_element('flood', false);
-            hide_gui_element('color_flood', false);
-
+        var steps = Math.ceil(width * height / 2500 * Math.pow(speed, 1.5));
+        for (var i = 0; i < steps; i++) {
+          if (maze.step(i == steps - 1)) {
+            maze_input.stop();
             return;
           }
         }
-        if (generating) {
-          requestAnimationFrame(step);
-        }
+        requestAnimationFrame(step);
       }
 
       step();
@@ -535,6 +717,10 @@ document.addEventListener('DOMContentLoaded', function() {
       hide_gui_element('stop', true);
       hide_gui_element('flood', false);
       hide_gui_element('color_flood', false);
+
+      if (maze && maze.stop) {
+        maze.stop();
+      }
 
       generating = false;
       flooding = false;
@@ -568,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(maze_input, 'cell_spacing', 0, 10, 1).name('Cell spacing');
   gui.add(maze_input, 'speed', 1, 50).name('Speed');
   gui.add(maze_input, 'starting_point', ['Top left', 'Center', 'Random']).name('Starting point');
-  gui.add(maze_input, 'algorithm', ['Random', 'Depth first', 'Heap', 'Wilson', 'Mixed']).name('Algorithm').onChange(function(value) {
+  gui.add(maze_input, 'algorithm', ['Random', 'Depth first', 'Heap', 'Wilson', 'Mixed', 'Random walk']).name('Algorithm').onChange(function(value) {
     hide_gui_element('mixed_maze_chances', value !== 'Mixed');
     hide_gui_element('heap_weights', value !== 'Heap');
   });
