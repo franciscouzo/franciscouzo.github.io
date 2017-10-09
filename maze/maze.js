@@ -623,6 +623,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var start = {x: 0, y: 0};
 
+  var algorithms = {
+    "Random": RandomTraversalMaze,
+    "Depth first": RandomDepthFirstMaze,
+    "Heap": PrimMaze,
+    "Wilson": WilsonMaze,
+    "Mixed": MixedMaze,
+    "Random walk": RandomWalkMaze
+  };
+
   var image_upload = document.getElementById('image_upload');
   image_upload.addEventListener('change', function(e) {
     var reader = new FileReader();
@@ -687,12 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
       }
 
-      var algorithm = {"Random": RandomTraversalMaze,
-                       "Depth first": RandomDepthFirstMaze,
-                       "Heap": PrimMaze,
-                       "Wilson": WilsonMaze,
-                       "Mixed": MixedMaze,
-                       "Random walk": RandomWalkMaze}[maze_input.algorithm];
+      var algorithm = algorithms[maze_input.algorithm];
       maze = new algorithm(width, height, start, new MazeDrawer(ctx));
 
       function step() {
@@ -754,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(maze_input, 'cell_spacing', 0, 10, 1).name('Cell spacing');
   gui.add(maze_input, 'speed', 1, 50).name('Speed');
   gui.add(maze_input, 'starting_point', ['Top left', 'Center', 'Random']).name('Starting point');
-  gui.add(maze_input, 'algorithm', ['Random', 'Depth first', 'Heap', 'Wilson', 'Mixed', 'Random walk']).name('Algorithm').onChange(function(value) {
+  gui.add(maze_input, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function(value) {
     hide_gui_element('mixed_maze_chances', value !== 'Mixed');
     hide_gui_element('heap_weights', value !== 'Heap');
   });
