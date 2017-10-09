@@ -1,7 +1,5 @@
 'use strict';
 
-var PIXEL_RATIO = 1;
-
 function color(x, width) {
   return "hsla(" + (x / width * 360) + ", 100%, 50%, 1.0)";
   //return "RGB(" + (x / width * 255) + ", 0, 0)";
@@ -493,8 +491,8 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.style.width  = options.width  + 'px';
     canvas.style.height = options.height + 'px';
 
-    canvas.width  = options.width  * PIXEL_RATIO;
-    canvas.height = options.height * PIXEL_RATIO;
+    canvas.width  = options.width;
+    canvas.height = options.height;
 
     data = [];
     for (var y = 0; y < canvas.height; y++) {
@@ -516,8 +514,8 @@ document.addEventListener('DOMContentLoaded', function() {
   resize();
 
   var gui = new dat.GUI();
-  gui.add(options, 'width', 1, window.innerWidth * PIXEL_RATIO, 1).name('Width').onChange(resize);
-  gui.add(options, 'height', 1, window.innerHeight * PIXEL_RATIO, 1).name('Height').onChange(resize);
+  gui.add(options, 'width', 1, window.innerWidth, 1).name('Width').onChange(resize);
+  gui.add(options, 'height', 1, window.innerHeight, 1).name('Height').onChange(resize);
   gui.add(options, 'speed', 1, 25, 1).name('Speed');
   gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function() {
     hide_gui_element('pivot', options.algorithm !== 'Quick sort');
