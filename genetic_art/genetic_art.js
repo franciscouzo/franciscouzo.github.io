@@ -117,6 +117,14 @@ PolygonFactory.prototype.draw = function(ctx, polygon) {
   }
 };
 
+PolygonFactory.prototype.svg = function(polygon) {
+  var style = rgb2hex(polygon.r, polygon.g, polygon.b);
+  var points = [];
+  for (var i = 0; i < polygon.points.length; i++) {
+    points.push(polygon.points[i][0] + ',' + polygon.points[i][1]);
+  }
+  return '<polygon points="' + points.join(' ') + '" fill="' + style + '" opacity="' + polygon.a + '"/>';
+};
 
 function RegularPolygonFactory(width, height, options) {
   this.width = width;
@@ -161,6 +169,10 @@ RegularPolygonFactory.prototype.tweak = function(polygon) {
   return new_polygon;
 };
 
+RegularPolygonFactory.prototype.get_point = function(polygon, i) {
+  return [Math.cos(i / polygon.sides * 2 * Math.PI + polygon.angle) * polygon.radius + polygon.x,
+          Math.sin(i / polygon.sides * 2 * Math.PI + polygon.angle) * polygon.radius + polygon.y];
+};
 
 RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
   var style = 'rgba(' + polygon.r + ', ' + polygon.g + ', ' + polygon.b + ', ' + polygon.a + ')';
@@ -171,12 +183,11 @@ RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
     ctx.arc(polygon.x, polygon.y, polygon.radius, 0, 2 * Math.PI);
   } else {
     for (var i = 0; i < polygon.sides; i++) {
-      var x = Math.cos(i / polygon.sides * 2 * Math.PI + polygon.angle) * polygon.radius + polygon.x;
-      var y = Math.sin(i / polygon.sides * 2 * Math.PI + polygon.angle) * polygon.radius + polygon.y;
+      var xy = this.get_point(polygon, i);
       if (i === 0) {
-        ctx.moveTo(x, y);
+        ctx.moveTo(xy[0], xy[1]);
       } else {
-        ctx.lineTo(x, y);
+        ctx.lineTo(xy[0], xy[1]);
       }
     }
   }
@@ -187,6 +198,21 @@ RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
   }
 };
 
+RegularPolygonFactory.prototype.svg = function(polygon) {
+  var style = rgb2hex(polygon.r, polygon.g, polygon.b);
+
+  if (polygon.sides === 50) {
+    return '<circle cx="' + polygon.x + '" cy="' + polygon.y + '" ' +
+           'r="' + polygon.radius + '" fill="' + style + '" />';
+  } else {
+    var points = [];
+    for (var i = 0; i < polygon.sides; i++) {
+      var xy = this.get_point(polygon, i);
+      points.push(xy.join());
+    }
+    return '<polygon points="' + points.join(' ') + '" fill="' + style + '" opacity="' + polygon.a + '"/>';
+  }
+};
 
 function TextureFactory(width, height, options, texture_canvas) {
   this.width = width;
@@ -225,7 +251,6 @@ TextureFactory.prototype.tweak = function(texture) {
   return new_texture;
 };
 
-
 TextureFactory.prototype.draw = function(ctx, texture) {
   ctx.save();
   ctx.globalAlpha = texture.a;
@@ -242,7 +267,6 @@ TextureFactory.prototype.draw = function(ctx, texture) {
   ctx.restore();
 };
 
-
 var get_score = function(orig_img_data, img_data) {
   var orig_data = orig_img_data.data;
   var data = img_data.data;
@@ -258,10 +282,28 @@ var get_score = function(orig_img_data, img_data) {
   }
 
   return score;
+};
+
+
+function download(filename, data) {
+  var link = document.createElement('a');
+  link.setAttribute('href', data);
+  link.setAttribute('download', filename);
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
+function rgb2hex(red, green, blue) {
+  var rgb = blue | (green << 8) | (red << 16);
+  return '#' + (0x1000000 + rgb).toString(16).slice(1);
+}
 
 document.addEventListener('DOMContentLoaded', function() {
+  var shapes = [];
+  var shape_factory;
+
   var genetic_input = {
     load_image: function() {
       image_upload.click();
@@ -303,16 +345,19 @@ document.addEventListener('DOMContentLoaded', function() {
       var generations = 0;
       var evolutions = 0;
 
-      var shape_factory = new {
+      shape_factory = new {
         Polygons: PolygonFactory,
         'Regular polygons': RegularPolygonFactory,
         Textures: TextureFactory
       }[genetic_input.style](canvas.width, canvas.height, genetic_input, texture_canvas);
+
+      hide_gui_element(gui, 'download_svg', !shape_factory.svg);
+
       var shape_n = genetic_input.shape_count;
 
       var overdraw = genetic_input.overdraw;
 
-      var shapes = [];
+      shapes = [];
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -414,6 +459,9 @@ document.addEventListener('DOMContentLoaded', function() {
       requestAnimationFrame(step);
     },
     clear: function() {
+      hide_gui_element(gui, 'clear', true);
+      hide_gui_element(gui, 'download_svg', true);
+
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     },
@@ -423,6 +471,20 @@ document.addEventListener('DOMContentLoaded', function() {
       hide_gui_element(gui, 'generate', false);
       hide_gui_element(gui, 'clear', false);
       hide_gui_element(gui, 'stop', true);
+    },
+    download_svg: function() {
+      var header = shape_factory.svg_header ? shape_factory.svg_header() : '';
+      var svg_elements = [];
+      for (var i = 0; i < shapes.length; i++) {
+        svg_elements.push(shape_factory.svg(shapes[i]));
+      }
+      var data = [
+        '<?xml version="1.0" encoding="UTF-8" ?>',
+        '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
+        'width="' + canvas.width + '" height="' + canvas.height + '" ' +
+        'viewBox="0 0 ' + canvas.width + ' ' + canvas.height + '">'
+      ].concat(header, svg_elements, '</svg>').join('\n');
+      download(filename.replace(/\.[^.]+$/, '') + '.svg', 'data:image/svg+xml,' + encodeURIComponent(data));
     }
   };
   var gui = new dat.GUI();
@@ -473,6 +535,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(genetic_input, 'generate').name('Generate');
   gui.add(genetic_input, 'clear').name('Clear');
   gui.add(genetic_input, 'stop').name('Stop');
+  gui.add(genetic_input, 'download_svg').name('Download SVG');
 
   var hide_gui_element = function(gui, property, hide) {
     for (var i = 0; i < gui.__controllers.length; i++) {
@@ -492,6 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
   hide_gui_element(gui, 'load_texture', true);
   hide_gui_element(gui, 'clear', true);
   hide_gui_element(gui, 'stop', true);
+  hide_gui_element(gui, 'download_svg', true);
 
   hide_gui_element(shape_restriction_folder, 'sides', true);
   hide_gui_element(shape_restriction_folder, 'angle', true);
@@ -514,6 +578,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var generating = false;
 
+  var filename = 'default';
+
   image_upload.addEventListener('change', function(e) {
     var reader = new FileReader();
     reader.onload = function(event) {
@@ -532,6 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     reader.readAsDataURL(e.target.files[0]);
+    filename = e.target.files[0].name;
   }, false);
 
   texture_upload.addEventListener('change', function(e) {
