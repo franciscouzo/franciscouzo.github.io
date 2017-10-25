@@ -257,14 +257,14 @@ OddEvenSort.prototype.sort = function(y, left, right) {
   var sorted = false;
   while (!sorted) {
     sorted = true;
-    for (var i = left + 1; i < right - 1; i += 2) {
+    for (var i = left + 1; i < right; i += 2) {
       if (this.cmp(this.data[y][i + 1], this.data[y][i])) {
         this.swap(y, i, i + 1);
         sorted = false;
       }
     }
 
-    for (var i = left; i < right - 1; i += 2) {
+    for (var i = left; i < right; i += 2) {
       if (this.cmp(this.data[y][i + 1], this.data[y][i])) {
         this.swap(y, i, i + 1);
         sorted = false;
