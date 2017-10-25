@@ -86,7 +86,7 @@ function random() {
   return ret;
 }
 
-function SortingVisualization(data, ctx) {
+function SortingVisualization(data, options, ctx) {
   this.original_data = [];
   this.swaps = [];
   for (var i = 0; i < data.length; i++) {
@@ -95,6 +95,8 @@ function SortingVisualization(data, ctx) {
   }
 
   this.data = data;
+
+  this.options = options;
   this.ctx = ctx;
 }
 
@@ -120,6 +122,7 @@ SortingVisualization.prototype.sort_end = function() {
 
 SortingVisualization.prototype.step = function() {
   var swapped = false;
+  var zoom = this.options.zoom;
 
   for (var y = 0; y < this.swaps.length; y++) {
     if (this.swaps[y].length) {
@@ -133,10 +136,10 @@ SortingVisualization.prototype.step = function() {
       this.original_data[y][x2] = temp;
 
       this.ctx.fillStyle = color(this.original_data[y][x1], this.original_data[y].length);
-      this.ctx.fillRect(x1, y, 1, 1);
+      this.ctx.fillRect(x1 * zoom, y * zoom, zoom, zoom);
 
       this.ctx.fillStyle = color(this.original_data[y][x2], this.original_data[y].length);
-      this.ctx.fillRect(x2, y, 1, 1);
+      this.ctx.fillRect(x2 * zoom, y * zoom, zoom, zoom);
     }
   }
 
@@ -417,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   options = {
-    width: 300,
+    width: 100,
     height: 100,
     speed: 1,
     algorithm: 'Bubble sort',
@@ -429,6 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       draw();
     },
+    zoom: 4,
     start: function() {
       hide_gui_element('shuffle', true);
       hide_gui_element('start', true);
@@ -437,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
       processing = true;
 
       var algorithm = algorithms[options.algorithm];
-      sort_visualization = new algorithm(data, ctx);
+      sort_visualization = new algorithm(data, options, ctx);
 
       for (var y = 0; y < options.height; y++) {
         sort_visualization.sort(y, 0, options.width - 1);
@@ -474,11 +478,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  function draw() {
-    for (var y = 0; y < canvas.height; y++) {
-      for (var x = 0; x < canvas.width; x++) {
-        ctx.fillStyle = color(data[y][x], canvas.width);
-        ctx.fillRect(x, y, 1, 1);
+  function draw(use_visualization_data) {
+    var draw_data = use_visualization_data ? sort_visualization.data : data;
+    canvas.width  = options.width  * options.zoom;
+    canvas.height = options.height * options.zoom;
+
+    canvas.style.width  = canvas.width  + 'px';
+    canvas.style.height = canvas.height + 'px';
+
+    for (var y = 0; y < options.height; y++) {
+      for (var x = 0; x < options.width; x++) {
+        ctx.fillStyle = color(draw_data[y][x], options.width);
+        ctx.fillRect(x * options.zoom, y * options.zoom, options.zoom, options.zoom);
       }
     }
   }
@@ -488,21 +499,15 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    canvas.style.width  = options.width  + 'px';
-    canvas.style.height = options.height + 'px';
-
-    canvas.width  = options.width;
-    canvas.height = options.height;
-
     data = [];
-    for (var y = 0; y < canvas.height; y++) {
+    for (var y = 0; y < options.height; y++) {
       data.push([]);
       if (options.generate === 'Increasing') {
-        for (var x = 0; x < canvas.width; x++) {
+        for (var x = 0; x < options.width; x++) {
           data[y].push(x);
         }
       } else if (options.generate === 'Decreasing') {
-        for (var x = canvas.width - 1; x >= 0; x--) {
+        for (var x = options.width - 1; x >= 0; x--) {
           data[y].push(x);
         }
       }
@@ -523,6 +528,9 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'pivot', ['Start', 'Middle', 'End', 'Random']).name('Pivot');
   gui.add(options, 'generate', ['Increasing', 'Decreasing']).name('Generate').onChange(resize);
   gui.add(options, 'shuffle').name('Shuffle');
+  gui.add(options, 'zoom', 1, 10, 1).name('Zoom').onChange(function() {
+    draw(true);
+  });
   gui.add(options, 'start').name('Start');
   gui.add(options, 'stop').name('Stop');
 
