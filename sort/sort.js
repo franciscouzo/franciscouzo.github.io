@@ -490,8 +490,8 @@ MergeSort.prototype.sort = function(y, left, right) {
     var merge = this.merge(y, left, mid, mid + 1, right);
     for (var i = 0; i < merge.length; i++) {
       this.data[y][left + i] = merge[i];
+      this.stack[y].push([left + i, [merge[i]]]);
     }
-    this.stack[y].push([left, merge]);
   }
 };
 
