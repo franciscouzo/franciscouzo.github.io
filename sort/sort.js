@@ -1,9 +1,14 @@
 'use strict';
 
-function color(x, width) {
-  return "hsla(" + (x / width * 360) + ", 100%, 50%, 1.0)";
-  //return "RGB(" + (x / width * 255) + ", 0, 0)";
-}
+var color_maps = {
+  hsl: function(x, width) {
+    return "hsl(" + (x / width * 360) + ", 100%, 50%)";
+  },
+  grayscale: function(x, width) {
+    var y = x / width * 255;
+    return 'rgb(' + [y, y, y].join() + ')';
+  }
+};
 
 function shuffle(array, start, end) {
   var m = end - start;
@@ -135,10 +140,10 @@ SortingVisualization.prototype.step = function() {
       this.original_data[y][x1] = this.original_data[y][x2];
       this.original_data[y][x2] = temp;
 
-      this.ctx.fillStyle = color(this.original_data[y][x1], this.original_data[y].length);
+      this.ctx.fillStyle = color_maps[this.options.color_map](this.original_data[y][x1], this.original_data[y].length);
       this.ctx.fillRect(x1 * zoom, y * zoom, zoom, zoom);
 
-      this.ctx.fillStyle = color(this.original_data[y][x2], this.original_data[y].length);
+      this.ctx.fillStyle = color_maps[this.options.color_map](this.original_data[y][x2], this.original_data[y].length);
       this.ctx.fillRect(x2 * zoom, y * zoom, zoom, zoom);
     }
   }
@@ -433,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
       draw();
     },
     zoom: 4,
+    color_map: 'hsl',
     start: function() {
       hide_gui_element('shuffle', true);
       hide_gui_element('start', true);
@@ -488,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     for (var y = 0; y < options.height; y++) {
       for (var x = 0; x < options.width; x++) {
-        ctx.fillStyle = color(draw_data[y][x], options.width);
+        ctx.fillStyle = color_maps[options.color_map](draw_data[y][x], options.width);
         ctx.fillRect(x * options.zoom, y * options.zoom, options.zoom, options.zoom);
       }
     }
@@ -530,6 +536,9 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'shuffle').name('Shuffle');
   gui.add(options, 'zoom', 1, 10, 1).name('Zoom').onChange(function() {
     draw(true);
+  });
+  gui.add(options, 'color_map', Object.keys(color_maps)).name('Color map').onChange(function() {
+    draw(true)
   });
   gui.add(options, 'start').name('Start');
   gui.add(options, 'stop').name('Stop');
