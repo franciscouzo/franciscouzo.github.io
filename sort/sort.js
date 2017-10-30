@@ -489,9 +489,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   options = {
-    width: 100,
-    height: 100,
-    speed: 1,
     algorithm: 'Bubble sort',
     pivot: 'Start',
     shrink_factor: 1.3,
@@ -502,6 +499,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       draw();
     },
+    width: 100,
+    height: 100,
+    speed: 1,
     zoom: 4,
     color_map: 'viridis',
     start: function() {
@@ -590,9 +590,6 @@ document.addEventListener('DOMContentLoaded', function() {
   resize();
 
   var gui = new dat.GUI();
-  gui.add(options, 'width', 1, window.innerWidth, 1).name('Width').onChange(resize);
-  gui.add(options, 'height', 1, window.innerHeight, 1).name('Height').onChange(resize);
-  gui.add(options, 'speed', 1, 25, 1).name('Speed');
   gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function() {
     hide_gui_element('pivot', options.algorithm !== 'Quick sort');
     hide_gui_element('shrink_factor', options.algorithm !== 'Comb sort');
@@ -601,12 +598,17 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'shrink_factor', 1.001, 3).name('Shrink factor');
   gui.add(options, 'generate', ['Increasing', 'Decreasing']).name('Generate').onChange(resize);
   gui.add(options, 'shuffle').name('Shuffle');
+
+  gui.add(options, 'width', 1, window.innerWidth, 1).name('Width').onChange(resize);
+  gui.add(options, 'height', 1, window.innerHeight, 1).name('Height').onChange(resize);
+  gui.add(options, 'speed', 1, 25, 1).name('Speed');
   gui.add(options, 'zoom', 1, 10, 1).name('Zoom').onChange(function() {
     draw(true);
   });
   gui.add(options, 'color_map', Object.keys(color_maps)).name('Color map').onChange(function() {
     draw(true)
   });
+
   gui.add(options, 'start').name('Start');
   gui.add(options, 'stop').name('Stop');
 
