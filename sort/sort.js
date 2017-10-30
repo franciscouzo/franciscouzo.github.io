@@ -318,6 +318,31 @@ ShellSort.prototype.sort = function(y, left, right) {
 };
 
 
+function CombSort() {
+  SortingVisualization.apply(this, arguments);
+}
+
+CombSort.prototype = Object.create(SortingVisualization.prototype);
+CombSort.prototype.constructor = SortingVisualization;
+
+CombSort.prototype.sort = function(y, left, right) {
+  var gap = right - left;
+  var sorted = false;
+
+  while (!sorted) {
+    gap = Math.max(Math.floor(gap / options.shrink_factor), 1);
+    sorted = gap === 1;
+
+    for (var i = left; i + gap <= right; i++) {
+      if (this.cmp(this.data[y][i], this.data[y][i + gap])) {
+        sorted = false;
+        this.swap(y, i, i + gap);
+      }
+    }
+  }
+};
+
+
 function QuickSort() {
   SortingVisualization.apply(this, arguments);
 }
@@ -436,6 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
     "Cocktail sort": CocktailSort,
     "Odd-even sort": OddEvenSort,
     "Shell sort": ShellSort,
+    "Comb sort": CombSort,
     "Quick sort": QuickSort,
     "Heap sort": HeapSort
   }
@@ -446,6 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
     speed: 1,
     algorithm: 'Bubble sort',
     pivot: 'Start',
+    shrink_factor: 1.3,
     generate: 'Increasing',
     shuffle: function() {
       for (var y = 0; y < data.length; y++) {
@@ -546,8 +573,10 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'speed', 1, 25, 1).name('Speed');
   gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function() {
     hide_gui_element('pivot', options.algorithm !== 'Quick sort');
+    hide_gui_element('shrink_factor', options.algorithm !== 'Comb sort');
   });
   gui.add(options, 'pivot', ['Start', 'Middle', 'End', 'Random']).name('Pivot');
+  gui.add(options, 'shrink_factor', 1.001, 3).name('Shrink factor');
   gui.add(options, 'generate', ['Increasing', 'Decreasing']).name('Generate').onChange(resize);
   gui.add(options, 'shuffle').name('Shuffle');
   gui.add(options, 'zoom', 1, 10, 1).name('Zoom').onChange(function() {
@@ -575,4 +604,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
   hide_gui_element('stop', true);
   hide_gui_element('pivot', true);
+  hide_gui_element('shrink_factor', true);
 });
