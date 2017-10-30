@@ -575,7 +575,7 @@ RadixSort.prototype.sort = function(y, left, right) {
       }
     }
 
-    it += 1;
+    it++;
   }
 };
 
