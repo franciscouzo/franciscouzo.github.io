@@ -216,6 +216,27 @@ InsertionSort.prototype.sort = function(y, left, right) {
 };
 
 
+function StoogeSort() {
+  SortingVisualization.apply(this, arguments);
+}
+
+StoogeSort.prototype = Object.create(SortingVisualization.prototype);
+StoogeSort.prototype.constructor = SortingVisualization;
+
+StoogeSort.prototype.sort = function(y, left, right) {
+  if (this.cmp(this.data[y][right], this.data[y][left])) {
+    this.swap(y, left, right);
+  }
+
+  if (right - left >= 2) {
+     var t = Math.round((right - left) / 3);
+     this.sort(y, left,     right - t);
+     this.sort(y, left + t, right);
+     this.sort(y, left,     right - t);
+   }
+};
+
+
 function SelectionSort() {
   SortingVisualization.apply(this, arguments);
 }
@@ -457,6 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var algorithms = {
     "Bubble sort": BubbleSort,
     "Insertion sort": InsertionSort,
+    "Stooge sort": StoogeSort,
     "Selection sort": SelectionSort,
     "Cocktail sort": CocktailSort,
     "Odd-even sort": OddEvenSort,
