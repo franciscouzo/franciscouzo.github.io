@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
       draw();
     },
     zoom: 4,
-    color_map: 'hsl',
+    color_map: 'viridis',
     start: function() {
       hide_gui_element('shuffle', true);
       hide_gui_element('start', true);
