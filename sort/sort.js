@@ -206,10 +206,13 @@ NonSwappingSortingVisualization.prototype.sort_end = function() {
   for (var y = 0; y < this.stack.length; y++) {
     this.stack[y].reverse();
   }
+
+  this.data = this.original_data;
+  draw(this.ctx, this.data, false);
 };
 
 NonSwappingSortingVisualization.prototype.step = function(have_to_draw) {
-  for (var y = 0; y < this.swaps.length; y++) {
+  for (var y = 0; y < this.stack.length; y++) {
     if (!this.stack[y].length) {
       draw(this.ctx, this.data, false);
       return true;
@@ -492,6 +495,7 @@ MergeSort.prototype.sort = function(y, left, right) {
   }
 };
 
+
 function HeapSort() {
   SortingVisualization.apply(this, arguments);
 }
@@ -534,6 +538,45 @@ HeapSort.prototype.sort = function(y, left, right) {
   for (var i = right; i > 0; i--) {
     this.swap(y, i, 0);
     this.max_heapify(y, 0, i - 1);
+  }
+};
+
+
+function RadixSort() {
+  NonSwappingSortingVisualization.apply(this, arguments);
+}
+
+RadixSort.prototype = Object.create(NonSwappingSortingVisualization.prototype);
+RadixSort.prototype.constructor = NonSwappingSortingVisualization;
+
+RadixSort.prototype.sort = function(y, left, right) {
+  var data = this.data[y];
+
+  var base = 2;
+  var maxval = Math.max.apply(null, this.data[y].slice(left, right + 1));
+
+  var it = 0;
+  while (Math.pow(base, it) <= maxval) {
+    var buckets = [];
+    for (var i = 0; i < base; i++) {
+      buckets.push([]);
+    }
+
+    for (var i = left; i <= right; i++) {
+      var digit = Math.floor(data[i] / Math.pow(base, it)) % base;
+      buckets[digit].push(data[i]);
+    }
+
+    data = [];
+    var start = left;
+    for (var i = 0; i < buckets.length; i++) {
+      for (var j = 0; j < buckets[i].length; j++) {
+        data.push(buckets[i][j]);
+        this.stack[y].push([start++, [buckets[i][j]]]);
+      }
+    }
+
+    it += 1;
   }
 };
 
@@ -625,6 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
     "Quick sort": QuickSort,
     "Merge sort": MergeSort,
     "Heap sort": HeapSort,
+    "Radix sort": RadixSort,
     "Slow sort": SlowSort,
     "Bogo sort": BogoSort
   }
