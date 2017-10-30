@@ -211,8 +211,8 @@ NonSwappingSortingVisualization.prototype.step = function(have_to_draw) {
       return true;
     }
 
-    var merge = this.stack[y].pop();
-    var left = merge[0], result = merge[1];
+    var data = this.stack[y].pop();
+    var left = data[0], result = data[1];
 
     for (var i = 0; i < result.length; i++) {
       this.data[y][left + i] = result[i];
