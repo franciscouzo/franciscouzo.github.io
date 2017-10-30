@@ -133,6 +133,16 @@ SortingVisualization.prototype.swap = function(y, x1, x2) {
   this.swaps[y].push([x1, x2]);
 };
 
+SortingVisualization.prototype.is_sorted = function(y) {
+  for (var i = 0; i < this.data[y].length - 1; i++) {
+    if (!this.cmp(this.data[y][i], this.data[y][i + 1])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 SortingVisualization.prototype.sort_end = function() {
   for (var y = 0; y < this.swaps.length; y++) {
     this.swaps[y].reverse();
@@ -465,7 +475,50 @@ HeapSort.prototype.sort = function(y, left, right) {
 };
 
 
+function BogoSort() {
+  SortingVisualization.apply(this, arguments);
+}
+
+BogoSort.prototype = Object.create(SortingVisualization.prototype);
+BogoSort.prototype.constructor = SortingVisualization;
+
+BogoSort.prototype.sort = function(y, left, right) {
+};
+
+BogoSort.prototype.step = function() {
+  // Can't create a list of swaps, as it would create on average O(n!) elements
+  var all_sorted = true;
+  for (var y = 0; y < this.data.length; y++) {
+    if (!this.is_sorted(y)) {
+      all_sorted = false;
+      shuffle(this.data[y], 0, this.data[y].length);
+    }
+  }
+
+  draw(this.ctx, this.data, false);
+
+  return all_sorted;
+}
+
+
 var options;
+
+function draw(ctx, data, resize) {
+  if (resize) {
+    canvas.width  = options.width  * options.zoom;
+    canvas.height = options.height * options.zoom;
+
+    canvas.style.width  = canvas.width  + 'px';
+    canvas.style.height = canvas.height + 'px';
+  }
+
+  for (var y = 0; y < data.length; y++) {
+    for (var x = 0; x < data[y].length; x++) {
+      ctx.fillStyle = color_maps[options.color_map](data[y][x], data[y].length);
+      ctx.fillRect(x * options.zoom, y * options.zoom, options.zoom, options.zoom);
+    }
+  }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
@@ -485,7 +538,8 @@ document.addEventListener('DOMContentLoaded', function() {
     "Shell sort": ShellSort,
     "Comb sort": CombSort,
     "Quick sort": QuickSort,
-    "Heap sort": HeapSort
+    "Heap sort": HeapSort,
+    "Bogo sort": BogoSort
   }
 
   options = {
@@ -497,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
       for (var y = 0; y < data.length; y++) {
         shuffle(data[y], 0, data[y].length);
       }
-      draw();
+      draw(ctx, data, false);
     },
     width: 100,
     height: 100,
@@ -549,22 +603,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  function draw(use_visualization_data) {
-    var draw_data = use_visualization_data && sort_visualization ? sort_visualization.data : data;
-    canvas.width  = options.width  * options.zoom;
-    canvas.height = options.height * options.zoom;
-
-    canvas.style.width  = canvas.width  + 'px';
-    canvas.style.height = canvas.height + 'px';
-
-    for (var y = 0; y < options.height; y++) {
-      for (var x = 0; x < options.width; x++) {
-        ctx.fillStyle = color_maps[options.color_map](draw_data[y][x], options.width);
-        ctx.fillRect(x * options.zoom, y * options.zoom, options.zoom, options.zoom);
-      }
-    }
-  }
-
   function resize() {
     if (processing) {
       return;
@@ -584,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    draw();
+    draw(ctx, data, true);
   }
 
   resize();
@@ -603,10 +641,10 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'height', 1, window.innerHeight, 1).name('Height').onChange(resize);
   gui.add(options, 'speed', 1, 25, 1).name('Speed');
   gui.add(options, 'zoom', 1, 10, 1).name('Zoom').onChange(function() {
-    draw(true);
+    draw(ctx, data, true);
   });
   gui.add(options, 'color_map', Object.keys(color_maps)).name('Color map').onChange(function() {
-    draw(true)
+    draw(ctx, data, false);
   });
 
   gui.add(options, 'start').name('Start');
