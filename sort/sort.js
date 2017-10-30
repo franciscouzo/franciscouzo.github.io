@@ -190,6 +190,43 @@ SortingVisualization.prototype.pivot = function(y, left, right) {
 }
 
 
+function NonSwappingSortingVisualization() {
+  SortingVisualization.apply(this, arguments);
+}
+
+NonSwappingSortingVisualization.prototype = Object.create(SortingVisualization.prototype);
+NonSwappingSortingVisualization.prototype.constructor = SortingVisualization;
+
+NonSwappingSortingVisualization.prototype.sort_end = function() {
+  SortingVisualization.prototype.sort_end.apply(this, arguments);
+  for (var y = 0; y < this.stack.length; y++) {
+    this.stack[y].reverse();
+  }
+};
+
+NonSwappingSortingVisualization.prototype.step = function(have_to_draw) {
+  for (var y = 0; y < this.swaps.length; y++) {
+    if (!this.stack[y].length) {
+      draw(this.ctx, this.data, false);
+      return true;
+    }
+
+    var merge = this.stack[y].pop();
+    var left = merge[0], result = merge[1];
+
+    for (var i = 0; i < result.length; i++) {
+      this.data[y][left + i] = result[i];
+    }
+  }
+
+  if (have_to_draw) {
+    draw(this.ctx, this.data, false);
+  }
+
+  return false;
+};
+
+
 function BubbleSort() {
   SortingVisualization.apply(this, arguments);
 }
@@ -412,15 +449,15 @@ QuickSort.prototype.sort = function(y, left, right) {
 
 
 function MergeSort() {
-  SortingVisualization.apply(this, arguments);
+  NonSwappingSortingVisualization.apply(this, arguments);
   this.stack = [];
   for (var i = 0; i < this.data.length; i++) {
     this.stack.push([]);
   }
 }
 
-MergeSort.prototype = Object.create(SortingVisualization.prototype);
-MergeSort.prototype.constructor = SortingVisualization;
+MergeSort.prototype = Object.create(NonSwappingSortingVisualization.prototype);
+MergeSort.prototype.constructor = NonSwappingSortingVisualization;
 
 MergeSort.prototype.merge = function(y, left_start, left_end, right_start, right_end) {
   var result = [];
@@ -453,37 +490,6 @@ MergeSort.prototype.sort = function(y, left, right) {
     }
     this.stack[y].push([left, merge]);
   }
-};
-
-MergeSort.prototype.sort_end = function() {
-  SortingVisualization.prototype.sort_end.apply(this, arguments);
-  for (var y = 0; y < this.stack.length; y++) {
-    this.stack[y].reverse();
-  }
-};
-
-MergeSort.prototype.step = function(have_to_draw) {
-  var zoom = this.options.zoom;
-
-  for (var y = 0; y < this.swaps.length; y++) {
-    if (!this.stack[y].length) {
-      draw(this.ctx, this.data, false);
-      return true;
-    }
-
-    var merge = this.stack[y].pop();
-    var left = merge[0], result = merge[1];
-
-    for (var i = 0; i < result.length; i++) {
-      this.data[y][left + i] = result[i];
-    }
-  }
-
-  if (have_to_draw) {
-    draw(this.ctx, this.data, false);
-  }
-
-  return false;
 };
 
 function HeapSort() {
