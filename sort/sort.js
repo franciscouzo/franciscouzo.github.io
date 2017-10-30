@@ -334,7 +334,7 @@ CombSort.prototype.sort = function(y, left, right) {
     sorted = gap === 1;
 
     for (var i = left; i + gap <= right; i++) {
-      if (this.cmp(this.data[y][i], this.data[y][i + gap])) {
+      if (this.cmp(this.data[y][i + gap], this.data[y][i])) {
         sorted = false;
         this.swap(y, i, i + gap);
       }
