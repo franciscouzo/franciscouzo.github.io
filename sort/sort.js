@@ -475,6 +475,26 @@ HeapSort.prototype.sort = function(y, left, right) {
 };
 
 
+function SlowSort() {
+  SortingVisualization.apply(this, arguments);
+}
+
+SlowSort.prototype = Object.create(SortingVisualization.prototype);
+SlowSort.prototype.constructor = SortingVisualization;
+
+SlowSort.prototype.sort = function(y, left, right) {
+  if (right - left >= 1) {
+    var m = Math.floor((right + left) / 2);
+    this.sort(y, left, m);
+    this.sort(y, m + 1, right);
+    if (this.cmp(this.data[y][m], this.data[y][right])) {
+      this.swap(y, m, right);
+    }
+    this.sort(y, left, right - 1);
+  }
+};
+
+
 function BogoSort() {
   SortingVisualization.apply(this, arguments);
 }
@@ -539,6 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
     "Comb sort": CombSort,
     "Quick sort": QuickSort,
     "Heap sort": HeapSort,
+    "Slow sort": SlowSort,
     "Bogo sort": BogoSort
   }
 
