@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   function draw(use_visualization_data) {
-    var draw_data = use_visualization_data ? sort_visualization.data : data;
+    var draw_data = use_visualization_data && sort_visualization ? sort_visualization.data : data;
     canvas.width  = options.width  * options.zoom;
     canvas.height = options.height * options.zoom;
 
