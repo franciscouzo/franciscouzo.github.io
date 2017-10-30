@@ -192,6 +192,10 @@ SortingVisualization.prototype.pivot = function(y, left, right) {
 
 function NonSwappingSortingVisualization() {
   SortingVisualization.apply(this, arguments);
+  this.stack = [];
+  for (var i = 0; i < this.data.length; i++) {
+    this.stack.push([]);
+  }
 }
 
 NonSwappingSortingVisualization.prototype = Object.create(SortingVisualization.prototype);
@@ -450,10 +454,6 @@ QuickSort.prototype.sort = function(y, left, right) {
 
 function MergeSort() {
   NonSwappingSortingVisualization.apply(this, arguments);
-  this.stack = [];
-  for (var i = 0; i < this.data.length; i++) {
-    this.stack.push([]);
-  }
 }
 
 MergeSort.prototype = Object.create(NonSwappingSortingVisualization.prototype);
