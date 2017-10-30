@@ -170,7 +170,7 @@ SortingVisualization.prototype.step = function() {
 SortingVisualization.prototype.pivot = function(y, left, right) {
   if (options.pivot === 'Start') {
     return left;
-  } else if (options.middle === 'Middle') {
+  } else if (options.pivot === 'Middle') {
     return left + Math.floor((right - left) / 2);
   } else if (options.pivot === 'End') {
     return right;
