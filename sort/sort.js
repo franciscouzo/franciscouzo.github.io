@@ -552,18 +552,17 @@ RadixSort.prototype.constructor = NonSwappingSortingVisualization;
 RadixSort.prototype.sort = function(y, left, right) {
   var data = this.data[y];
 
-  var base = 2;
   var maxval = Math.max.apply(null, this.data[y].slice(left, right + 1));
 
   var it = 0;
-  while (Math.pow(base, it) <= maxval) {
+  while (Math.pow(this.options.base, it) <= maxval) {
     var buckets = [];
-    for (var i = 0; i < base; i++) {
+    for (var i = 0; i < this.options.base; i++) {
       buckets.push([]);
     }
 
     for (var i = left; i <= right; i++) {
-      var digit = Math.floor(data[i] / Math.pow(base, it)) % base;
+      var digit = Math.floor(data[i] / Math.pow(this.options.base, it)) % this.options.base;
       buckets[digit].push(data[i]);
     }
 
@@ -677,6 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
     algorithm: 'Bubble sort',
     pivot: 'Start',
     shrink_factor: 1.3,
+    base: 2,
     generate: 'Increasing',
     shuffle: function() {
       for (var y = 0; y < data.length; y++) {
@@ -762,9 +762,11 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function() {
     hide_gui_element('pivot', options.algorithm !== 'Quick sort');
     hide_gui_element('shrink_factor', options.algorithm !== 'Comb sort');
+    hide_gui_element('base', options.algorithm !== 'Radix sort');
   });
   gui.add(options, 'pivot', ['Start', 'Middle', 'End', 'Random']).name('Pivot');
   gui.add(options, 'shrink_factor', 1.001, 3).name('Shrink factor');
+  gui.add(options, 'base', 2, 10, 1).name('Base');
   gui.add(options, 'generate', ['Increasing', 'Decreasing']).name('Generate').onChange(resize);
   gui.add(options, 'shuffle').name('Shuffle');
 
@@ -798,4 +800,5 @@ document.addEventListener('DOMContentLoaded', function() {
   hide_gui_element('stop', true);
   hide_gui_element('pivot', true);
   hide_gui_element('shrink_factor', true);
+  hide_gui_element('base', true);
 });
