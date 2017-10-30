@@ -413,21 +413,75 @@ QuickSort.prototype.sort = function(y, left, right) {
 
 function MergeSort() {
   SortingVisualization.apply(this, arguments);
+  this.stack = [];
+  for (var i = 0; i < this.data.length; i++) {
+    this.stack.push([]);
+  }
 }
 
 MergeSort.prototype = Object.create(SortingVisualization.prototype);
 MergeSort.prototype.constructor = SortingVisualization;
 
-MergeSort.prototype.merge = function(y, left, right) {
+MergeSort.prototype.merge = function(y, left_start, left_end, right_start, right_end) {
+  var result = [];
+
+  while (left_start <= left_end || right_start <= right_end) {
+    if (left_start <= left_end && right_start <= right_end) {
+      if (this.cmp(this.data[y][left_start], this.data[y][right_start])) {
+        result.push(this.data[y][left_start++]);
+      } else {
+        result.push(this.data[y][right_start++]);
+      }
+    } else if (left_start <= left_end) {
+      result.push(this.data[y][left_start++]);
+    } else {
+      result.push(this.data[y][right_start++]);
+    }
+  }
+
+  return result;
 }
 
 MergeSort.prototype.sort = function(y, left, right) {
-  if (left > right) {
-    return;
+  if (right > left) {
+    var mid = Math.floor((right + left) / 2);
+    this.sort(y, left, mid);
+    this.sort(y, mid + 1, right);
+    var merge = this.merge(y, left, mid, mid + 1, right);
+    for (var i = 0; i < merge.length; i++) {
+      this.data[y][left + i] = merge[i];
+    }
+    this.stack[y].push([left, merge]);
   }
-
 };
 
+MergeSort.prototype.sort_end = function() {
+  SortingVisualization.prototype.sort_end.apply(this, arguments);
+  for (var y = 0; y < this.stack.length; y++) {
+    this.stack[y].reverse();
+  }
+};
+
+MergeSort.prototype.step = function() {
+  var zoom = this.options.zoom;
+
+  for (var y = 0; y < this.swaps.length; y++) {
+    if (!this.stack[y].length) {
+      return true;
+    }
+
+    var merge = this.stack[y].pop();
+    var left = merge[0], result = merge[1];
+
+    for (var i = 0; i < result.length; i++) {
+      this.data[y][left + i] = result[i];
+    }
+  }
+
+  draw(this.ctx, this.data, false);
+
+  return false;
+};
 
 function HeapSort() {
   SortingVisualization.apply(this, arguments);
@@ -558,6 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
     "Shell sort": ShellSort,
     "Comb sort": CombSort,
     "Quick sort": QuickSort,
+    "Merge sort": MergeSort,
     "Heap sort": HeapSort,
     "Slow sort": SlowSort,
     "Bogo sort": BogoSort
