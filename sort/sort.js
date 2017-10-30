@@ -462,11 +462,12 @@ MergeSort.prototype.sort_end = function() {
   }
 };
 
-MergeSort.prototype.step = function() {
+MergeSort.prototype.step = function(have_to_draw) {
   var zoom = this.options.zoom;
 
   for (var y = 0; y < this.swaps.length; y++) {
     if (!this.stack[y].length) {
+      draw(this.ctx, this.data, false);
       return true;
     }
 
@@ -478,7 +479,9 @@ MergeSort.prototype.step = function() {
     }
   }
 
-  draw(this.ctx, this.data, false);
+  if (have_to_draw) {
+    draw(this.ctx, this.data, false);
+  }
 
   return false;
 };
@@ -559,7 +562,7 @@ BogoSort.prototype.constructor = SortingVisualization;
 BogoSort.prototype.sort = function(y, left, right) {
 };
 
-BogoSort.prototype.step = function() {
+BogoSort.prototype.step = function(have_to_draw) {
   // Can't create a list of swaps, as it would create on average O(n!) elements
   var all_sorted = true;
   for (var y = 0; y < this.data.length; y++) {
@@ -569,7 +572,9 @@ BogoSort.prototype.step = function() {
     }
   }
 
-  draw(this.ctx, this.data, false);
+  if (all_sorted || have_to_draw) {
+    draw(this.ctx, this.data, false);
+  }
 
   return all_sorted;
 }
@@ -654,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         for (var i = 0; i < options.speed; i++) {
-          if (sort_visualization.step()) {
+          if (sort_visualization.step(i === options.speed - 1)) {
             options.stop();
             return;
           }
