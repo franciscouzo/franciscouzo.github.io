@@ -662,10 +662,10 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'height', 1, window.innerHeight, 1).name('Height').onChange(resize);
   gui.add(options, 'speed', 1, 25, 1).name('Speed');
   gui.add(options, 'zoom', 1, 10, 1).name('Zoom').onChange(function() {
-    draw(ctx, data, true);
+    draw(ctx, processing ? sort_visualization.data : data, true);
   });
   gui.add(options, 'color_map', Object.keys(color_maps)).name('Color map').onChange(function() {
-    draw(ctx, data, false);
+    draw(ctx, processing ? sort_visualization.data : data, false);
   });
 
   gui.add(options, 'start').name('Start');
