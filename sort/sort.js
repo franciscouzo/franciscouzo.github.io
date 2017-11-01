@@ -592,7 +592,7 @@ SlowSort.prototype.sort = function(y, left, right) {
     var m = Math.floor((right + left) / 2);
     this.sort(y, left, m);
     this.sort(y, m + 1, right);
-    if (this.cmp(this.data[y][m], this.data[y][right])) {
+    if (this.cmp(this.data[y][right], this.data[y][m])) {
       this.swap(y, m, right);
     }
     this.sort(y, left, right - 1);
