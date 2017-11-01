@@ -632,11 +632,11 @@ var options;
 
 function draw(ctx, data, resize) {
   if (resize) {
-    canvas.width  = options.width  * options.zoom;
-    canvas.height = options.height * options.zoom;
+    ctx.canvas.width  = options.width  * options.zoom;
+    ctx.canvas.height = options.height * options.zoom;
 
-    canvas.style.width  = canvas.width  + 'px';
-    canvas.style.height = canvas.height + 'px';
+    ctx.canvas.style.width  = canvas.width  + 'px';
+    ctx.canvas.style.height = canvas.height + 'px';
   }
 
   for (var y = 0; y < data.length; y++) {
@@ -650,6 +650,9 @@ function draw(ctx, data, resize) {
 document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
+
+  var timelapse_canvas = document.getElementById('timelapse_canvas');
+  var timelapse_ctx = timelapse_canvas.getContext('2d');
 
   var processing = false;
 
@@ -704,6 +707,20 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       sort_visualization.sort_end();
 
+      var total_frames = (sort_visualization.stack || sort_visualization.swaps)[0].length;
+      var captures = Math.min(
+        total_frames,
+        Math.max(sort_visualization.data.length, sort_visualization.data[0].length)
+      );
+
+      var current_frame = 0;
+      var timelapse_y = 0;
+
+      timelapse_canvas.width  = canvas.width;
+      timelapse_canvas.height = captures * options.zoom;
+      timelapse_canvas.style.width  = timelapse_canvas.width  + 'px';
+      timelapse_canvas.style.height = timelapse_canvas.height + 'px';
+
       function step() {
         if (!processing) {
           return;
@@ -713,6 +730,16 @@ document.addEventListener('DOMContentLoaded', function() {
             options.stop();
             return;
           }
+
+          if (Math.floor(current_frame / total_frames * captures) !== Math.floor((current_frame + 1) / total_frames * captures)) {
+            for (var x = 0; x < sort_visualization.data[0].length; x++) {
+              timelapse_ctx.fillStyle = color_maps[options.color_map](sort_visualization.data[0][x] / sort_visualization.data[0].length);
+              timelapse_ctx.fillRect(x * options.zoom, timelapse_y * options.zoom, options.zoom, options.zoom);
+            }
+            timelapse_y++;
+          }
+
+          current_frame++;
         }
         requestAnimationFrame(step);
       }
