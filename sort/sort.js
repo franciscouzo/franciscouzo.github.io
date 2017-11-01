@@ -378,7 +378,11 @@ ShellSort.prototype = Object.create(SortingVisualization.prototype);
 ShellSort.prototype.constructor = SortingVisualization;
 
 ShellSort.prototype.sort = function(y, left, right) {
-  var gaps = [701, 301, 132, 57, 23, 10, 4, 1];
+  var gaps = options.gaps.split(',');
+  for (var i = 0; i < gaps.length; i++) {
+    gaps[i] = parseInt(gaps[i]);
+  }
+  gaps.sort(function(a, b) {return b - a});
 
   for (var k = 0; k < gaps.length; k++) {
     var gap = gaps[k];
@@ -680,6 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
     pivot: 'Start',
     shrink_factor: 1.3,
     base: 2,
+    gaps: '701, 301, 132, 57, 23, 10, 4, 1',
     generate: 'Increasing',
     shuffle: function() {
       for (var y = 0; y < data.length; y++) {
@@ -790,10 +795,12 @@ document.addEventListener('DOMContentLoaded', function() {
     hide_gui_element('pivot', options.algorithm !== 'Quick sort');
     hide_gui_element('shrink_factor', options.algorithm !== 'Comb sort');
     hide_gui_element('base', options.algorithm !== 'Radix sort');
+    hide_gui_element('gaps', options.algorithm !== 'Shell sort');
   });
   gui.add(options, 'pivot', ['Start', 'Middle', 'End', 'Random']).name('Pivot');
   gui.add(options, 'shrink_factor', 1.001, 3).name('Shrink factor');
   gui.add(options, 'base', 2, 10, 1).name('Base');
+  gui.add(options, 'gaps').name('Gaps');
   gui.add(options, 'generate', ['Increasing', 'Decreasing']).name('Generate').onChange(resize);
   gui.add(options, 'shuffle').name('Shuffle');
 
@@ -828,4 +835,5 @@ document.addEventListener('DOMContentLoaded', function() {
   hide_gui_element('pivot', true);
   hide_gui_element('shrink_factor', true);
   hide_gui_element('base', true);
+  hide_gui_element('gaps', true);
 });
