@@ -283,11 +283,11 @@ StoogeSort.prototype.sort = function(y, left, right) {
   }
 
   if (right - left >= 2) {
-     var t = Math.round((right - left) / 3);
-     this.sort(y, left,     right - t);
-     this.sort(y, left + t, right);
-     this.sort(y, left,     right - t);
-   }
+    var t = Math.round((right - left) / 3);
+    this.sort(y, left,     right - t);
+    this.sort(y, left + t, right);
+    this.sort(y, left,     right - t);
+  }
 };
 
 
