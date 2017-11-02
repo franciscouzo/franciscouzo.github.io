@@ -133,6 +133,14 @@ SortingVisualization.prototype.swap = function(y, x1, x2) {
   this.swaps[y].push([x1, x2]);
 };
 
+SortingVisualization.prototype.compare_and_swap = function(y, x1, x2) {
+  if (this.cmp(this.data[y][x1], this.data[y][x2])) {
+    this.swap(y, x1, x2);
+    return true;
+  }
+  return false;
+};
+
 SortingVisualization.prototype.is_sorted = function(y) {
   for (var i = 0; i < this.data[y].length - 1; i++) {
     if (!this.cmp(this.data[y][i], this.data[y][i + 1])) {
@@ -244,9 +252,7 @@ BubbleSort.prototype.constructor = SortingVisualization;
 BubbleSort.prototype.sort = function(y, left, right) {
   for (; left <= right; left++) {
     for (var x = left; x <= right; x++) {
-      if (this.cmp(this.data[y][x], this.data[y][left])) {
-        this.swap(y, left, x);
-      }
+      this.compare_and_swap(y, x, left);
     }
   }
 };
@@ -278,9 +284,7 @@ StoogeSort.prototype = Object.create(SortingVisualization.prototype);
 StoogeSort.prototype.constructor = SortingVisualization;
 
 StoogeSort.prototype.sort = function(y, left, right) {
-  if (this.cmp(this.data[y][right], this.data[y][left])) {
-    this.swap(y, left, right);
-  }
+  this.compare_and_swap(y, right, left);
 
   if (right - left >= 2) {
     var t = Math.round((right - left) / 3);
@@ -323,20 +327,14 @@ CocktailSort.prototype.sort = function(y, left, right) {
   while (swapped) {
     swapped = false;
     for (var i = left; i < right - 1; i++) {
-      if (this.cmp(this.data[y][i + 1], this.data[y][i])) {
-        this.swap(y, i, i + 1);
-        swapped = true;
-      }
+      swapped = this.compare_and_swap(y, i + 1, i) || swapped;
     }
     if (!swapped) {
       break;
     }
     swapped = false;
     for (var i = right - 1; i >= 0; i--) {
-      if (this.cmp(this.data[y][i + 1], this.data[y][i])) {
-        this.swap(y, i, i + 1);
-        swapped = true;
-      }
+      swapped = this.compare_and_swap(y, i + 1, i) || swapped;
     }
   }
 };
@@ -354,17 +352,11 @@ OddEvenSort.prototype.sort = function(y, left, right) {
   while (!sorted) {
     sorted = true;
     for (var i = left + 1; i < right; i += 2) {
-      if (this.cmp(this.data[y][i + 1], this.data[y][i])) {
-        this.swap(y, i, i + 1);
-        sorted = false;
-      }
+      sorted = !this.compare_and_swap(y, i + 1, i) && sorted;
     }
 
     for (var i = left; i < right; i += 2) {
-      if (this.cmp(this.data[y][i + 1], this.data[y][i])) {
-        this.swap(y, i, i + 1);
-        sorted = false;
-      }
+      sorted = !this.compare_and_swap(y, i + 1, i) && sorted;
     }
   }
 };
@@ -413,10 +405,7 @@ CombSort.prototype.sort = function(y, left, right) {
     sorted = gap === 1;
 
     for (var i = left; i + gap <= right; i++) {
-      if (this.cmp(this.data[y][i + gap], this.data[y][i])) {
-        sorted = false;
-        this.swap(y, i, i + gap);
-      }
+      sorted = !this.compare_and_swap(y, i + gap, i) && sorted;
     }
   }
 };
@@ -596,9 +585,7 @@ SlowSort.prototype.sort = function(y, left, right) {
     var m = Math.floor((right + left) / 2);
     this.sort(y, left, m);
     this.sort(y, m + 1, right);
-    if (this.cmp(this.data[y][right], this.data[y][m])) {
-      this.swap(y, m, right);
-    }
+    this.compare_and_swap(y, right, m);
     this.sort(y, left, right - 1);
   }
 };
