@@ -185,18 +185,6 @@ SortingVisualization.prototype.step = function() {
   return !swapped;
 };
 
-SortingVisualization.prototype.pivot = function(y, left, right) {
-  if (options.pivot === 'Start') {
-    return left;
-  } else if (options.pivot === 'Middle') {
-    return left + Math.floor((right - left) / 2);
-  } else if (options.pivot === 'End') {
-    return right;
-  } else if (options.pivot === 'Random') {
-    return left + Math.floor(random() * (right - left));
-  }
-}
-
 
 function NonSwappingSortingVisualization() {
   SortingVisualization.apply(this, arguments);
@@ -417,6 +405,18 @@ function QuickSort() {
 
 QuickSort.prototype = Object.create(SortingVisualization.prototype);
 QuickSort.prototype.constructor = SortingVisualization;
+
+QuickSort.prototype.pivot = function(y, left, right) {
+  if (options.pivot === 'Start') {
+    return left;
+  } else if (options.pivot === 'Middle') {
+    return left + Math.floor((right - left) / 2);
+  } else if (options.pivot === 'End') {
+    return right;
+  } else if (options.pivot === 'Random') {
+    return left + Math.floor(random() * (right - left));
+  }
+}
 
 QuickSort.prototype.partition = function(y, pivot, left, right) {
   var store_index = left,
