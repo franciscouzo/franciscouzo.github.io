@@ -60,39 +60,52 @@ function hide_gui_folder(gui, folder_name, hide) {
 
 document.addEventListener('DOMContentLoaded', function() {
   navigator.mediaDevices.getUserMedia({video: true, audio: false}).then(function(stream) {
+    var init = function () {
+      horizontal_canvas.width = window.innerWidth - video.width;
+      horizontal_canvas.height = video.height;
+      horizontal_canvas.style.left = video.width + 'px';
+
+      vertical_canvas.width = video.width;
+      vertical_canvas.height = window.innerHeight - video.height;
+      vertical_canvas.style.top = video.height + 'px';
+
+      video_slit_canvas.width = video.width;
+      video_slit_canvas.height = video.height;
+      video_slit_canvas.style.left = video.width + 'px';
+
+      horizontal_strip.width = video.width;
+    };
+
     var video = document.getElementById('video');
     video.src = URL.createObjectURL(stream);
 
     var horizontal_canvas = document.createElement('canvas');
     var horizontal_context = horizontal_canvas.getContext('2d');
-    horizontal_canvas.width = window.innerWidth - video.width;
-    horizontal_canvas.height = video.height;
     horizontal_canvas.style.position = 'absolute';
     horizontal_canvas.style.visibility = 'hidden';
-    horizontal_canvas.style.left = video.width + 'px';
     horizontal_canvas.style.top = '0px';
     document.body.appendChild(horizontal_canvas);
 
     var vertical_canvas = document.createElement('canvas');
     var vertical_context = vertical_canvas.getContext('2d');
-    vertical_canvas.width = video.width;
-    vertical_canvas.height = window.innerHeight - video.height;
     vertical_canvas.style.position = 'absolute';
     vertical_canvas.style.visibility = 'hidden';
     vertical_canvas.style.left = '0px';
-    vertical_canvas.style.top = video.height + 'px';
     document.body.appendChild(vertical_canvas);
 
     var video_slit_canvas = document.createElement('canvas');
     var video_slit_context = video_slit_canvas.getContext('2d');
-    video_slit_canvas.width = video.width;
-    video_slit_canvas.height = video.height;
     video_slit_canvas.style.position = 'absolute';
-    video_slit_canvas.style.left = video.width + 'px';
     video_slit_canvas.style.top = '0px';
     document.body.appendChild(video_slit_canvas);
 
     var video_history = [];
+
+    var horizontal_strip = document.createElement('canvas');
+    var horizontal_strip_ctx = horizontal_strip.getContext('2d');
+    var horizontal_strip_data = horizontal_strip_ctx.getImageData(0, 0, video.width, 1).data;
+
+    init();
 
     var options = {
       x: Math.floor(video.width / 2),
@@ -135,9 +148,18 @@ document.addEventListener('DOMContentLoaded', function() {
       vertical_guide_line.style.visibility = strip_mode ? 'visible' : 'hidden';
     }).listen();
 
+    gui.add(video, 'width').name("Width").onChange(function() {
+      init()
+      x_value.max(video.width - 1);
+    });
+    gui.add(video, 'height').name("Height").onChange(function() {
+      init()
+      y_value.max(video.height - 1);
+    });
+
     var x_folder = gui.addFolder("X");
     x_folder.closed = false;
-    x_folder.add(options, 'x', 0, video.width - 1).name("X").listen();
+    var x_value = x_folder.add(options, 'x', 0, video.width - 1).name("X").listen();
 
     x_cycle = x_folder.addFolder("Cycle");
     x_cycle.add(options.x_cycle, 'mode', ['disabled', 'sin', 'cos', 'triangular']).name("Mode");
@@ -146,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var y_folder = gui.addFolder("Y");
     y_folder.closed = false;
-    y_folder.add(options, 'y', 0, video.height - 1).name("Y").listen();
+    var y_value = y_folder.add(options, 'y', 0, video.height - 1).name("Y").listen();
 
     y_cycle = y_folder.addFolder("Cycle");
     y_cycle.add(options.y_cycle, 'mode', ['disabled', 'sin', 'cos', 'triangular']).name("Mode");
@@ -182,12 +204,6 @@ document.addEventListener('DOMContentLoaded', function() {
         options.y = event.pageY;
       }
     });
-
-    var horizontal_strip = document.createElement('canvas');
-    horizontal_strip.width = video.width;
-    horizontal_strip.height = 1;
-    var horizontal_strip_ctx = horizontal_strip.getContext('2d');
-    var horizontal_strip_data = horizontal_strip_ctx.getImageData(0, 0, video.width, 1).data;
 
     var update_slit_scan = function(timestamp) {
       if (options.strip_mode) {
