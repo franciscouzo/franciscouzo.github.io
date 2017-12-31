@@ -1,51 +1,14 @@
 "use strict";
 
-var init_shaders = function(gl, fs_id, vs_id) {
-  var fs_source = document.getElementById(fs_id).text;
-  var vs_source = document.getElementById(vs_id).text;
-
-  var fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fragment_shader, fs_source);
-  gl.compileShader(fragment_shader);
-  if (!gl.getShaderParameter(fragment_shader, gl.COMPILE_STATUS)) {
-    console.log("ERROR IN " + fragment_shader + "SHADER: " + gl.getShaderInfoLog(fragment_shader));
-    alert("Error in fragment shader")
-    return false;
-  }
-
-  var vertex_shader = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vertex_shader, vs_source);
-  gl.compileShader(vertex_shader);
-  if (!gl.getShaderParameter(vertex_shader, gl.COMPILE_STATUS)) {
-    console.log("ERROR IN " + vertex_shader + "SHADER: " + gl.getShaderInfoLog(vertex_shader));
-    alert("Error in vertex shader")
-    return false;
-  }
-
-  var program_id = gl.createProgram();
-  gl.attachShader(program_id, fragment_shader);
-  gl.attachShader(program_id, vertex_shader);
-
-  gl.linkProgram(program_id);
-
-  gl.deleteShader(fragment_shader);
-  gl.deleteShader(vertex_shader);
-
-  if (!gl.getProgramParameter(program_id, gl.LINK_STATUS)) {
-    alert("Could not initialize shaders");
-  }
-
-  program_id.position = gl.getAttribLocation(program_id, "vertexPos");
-  gl.enableVertexAttribArray(program_id.position);
-
-  return program_id;
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
-  var program = init_shaders(gl, 'fragment-shader', 'vertex-shader');
+  var program = init_shaders(
+    gl,
+    document.getElementById('fragment-shader').text,
+    document.getElementById('vertex-shader').text
+  );
   gl.useProgram(program);
 
   program.metaballs   = gl.getUniformLocation(program, "metaballs");
