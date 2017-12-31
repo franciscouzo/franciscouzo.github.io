@@ -280,17 +280,6 @@ var get_score = function(orig_img_data, img_data) {
   return score;
 };
 
-
-function download(filename, data) {
-  var link = document.createElement('a');
-  link.setAttribute('href', data);
-  link.setAttribute('download', filename);
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 function rgb2hex(red, green, blue) {
   var rgb = blue | (green << 8) | (red << 16);
   return '#' + (0x1000000 + rgb).toString(16).slice(1);

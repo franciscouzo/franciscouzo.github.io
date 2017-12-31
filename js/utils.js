@@ -68,3 +68,13 @@ function init_shaders(gl, fs_source, vs_source) {
 
   return program_id;
 }
+
+function download(filename, data) {
+  var link = document.createElement('a');
+  link.setAttribute('href', data);
+  link.setAttribute('download', filename);
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

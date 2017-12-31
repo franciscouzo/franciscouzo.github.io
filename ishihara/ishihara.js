@@ -2,16 +2,6 @@
 
 var PIXEL_RATIO = window.devicePixelRatio || 1;
 
-function download(filename, data) {
-  var link = document.createElement('a');
-  link.setAttribute('href', data);
-  link.setAttribute('download', filename);
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
