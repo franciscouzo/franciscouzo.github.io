@@ -78,3 +78,67 @@ function download(filename, data) {
   link.click();
   document.body.removeChild(link);
 }
+
+var SG_MAGICCONST = 1.0 + Math.log(4.5);
+var LOG4 = Math.log(4.0);
+
+function gamma_distribution(alpha, beta) {
+  /*if (alpha <= 0.0 || beta <= 0.0) {
+    throw new Error('gamma_distribution: alpha and beta must be > 0.0');
+  }*/
+
+  if (alpha > 1) {
+    var ainv = Math.sqrt(2.0 * alpha - 1.0);
+    var bbb = alpha - LOG4;
+    var ccc = alpha + ainv;
+
+    while (true) {
+      var u1 = Math.random();
+      if (1e-7 > u1 || u1 > .9999999) {
+        continue;
+      }
+      var u2 = 1.0 - Math.random();
+      var v = Math.log(u1 / (1.0 - u1)) / ainv;
+      var x = alpha * Math.exp(v);
+      var z = u1 * u1 * u2;
+      var r = bbb + ccc * v - x;
+      if (r + SG_MAGICCONST - 4.5 * z >= 0.0 || r >= Math.log(z)) {
+        return x * beta;
+      }
+    }
+  } else if (alpha === 1.0) {
+      do {
+        var u = Math.random();
+      } while (u <= 1e-7);
+      return -Math.log(u) * beta;
+  } else {
+    while (true) {
+      var u = Math.random();
+      var b = (Math.E + alpha) / Math.E;
+      var p = b * u;
+      if (p <= 1.0) {
+        x = Math.pow(p, (1.0 / alpha));
+      } else {
+        x = -Math.log((b - p) / alpha);
+      }
+      var u1 = Math.random();
+      if (p > 1.0) {
+        if (u1 <= Math.pow(x, alpha - 1.0)) {
+          break;
+        }
+      } else if (u1 <= Math.exp(-x)) {
+        break;
+      }
+    }
+    return x * beta;
+  }
+}
+
+function beta_distribution(alpha, beta) {
+  var y = gamma_distribution(alpha, 1);
+  if (y === 0) {
+    return 0.0;
+  } else {
+    return y / (y + gamma_distribution(beta, 1));
+  }
+}
