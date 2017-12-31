@@ -53,6 +53,12 @@ function hide_gui_element(gui, property, hide) {
   }
 }
 
+function update_gui(gui) {
+  for (var i = 0; i < gui.__controllers.length; i++) {
+    gui.__controllers[i].updateDisplay();
+  }
+}
+
 function hide_gui_folder(gui, folder_name, hide) {
   var folder = gui.__folders[folder_name];
   folder.domElement.parentElement.hidden = hide;
@@ -149,12 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
         vertical_guide_line.style.visibility = strip_mode ? 'visible' : 'hidden';
       });
 
-      var update_gui = function() {
-        for (var i = 0; i < gui.__controllers.length; i++) {
-          gui.__controllers[i].updateDisplay();
-        }
-      };
-
       var update_resolution = function() {
         init();
 
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
         options.x = Math.min(options.x, video.width - 1);
         options.y = Math.min(options.y, video.height - 1);
 
-        update_gui();
+        update_gui(gui);
       };
 
       gui.add(video, 'width', 1, video.videoWidth, 1).name("Width").onChange(function() {
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
           options.x = event.pageX;
           options.y = event.pageY;
 
-          update_gui();
+          update_gui(gui);
         }
       });
 
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
           options.x = event.pageX;
           options.y = event.pageY;
 
-          update_gui();
+          update_gui(gui);
         }
       });
 
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
           options.x = event.pageX;
           options.y = event.pageY;
 
-          update_gui();
+          update_gui(gui);
         }
       });
 
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
             options.y = 2 * options.y_cycle.range / options.y_cycle.length * (Math.abs((timestamp / 1000) % options.y_cycle.length - options.y_cycle.length / 2) - options.x_cycle.length / 4) * video.height + video.height / 2;
           }
 
-          update_gui();
+          update_gui(gui);
 
           modify_line(horizontal_guide_line, 0, options.y, video.width, options.y);
           modify_line(vertical_guide_line, options.x, 0, options.x, video.height);
