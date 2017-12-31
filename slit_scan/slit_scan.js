@@ -43,16 +43,6 @@ function modify_line(line, x1, y1, x2, y2) {
   return line_element(line, x, y, c, alpha);
 }
 
-function hide_gui_element(gui, property, hide) {
-  for (var i = 0; i < gui.__controllers.length; i++) {
-    var controller = gui.__controllers[i];
-    if (controller.property === property) {
-      controller.domElement.parentElement.parentElement.hidden = hide;
-      return;
-    }
-  }
-}
-
 function update_gui(gui) {
   for (var i = 0; i < gui.__controllers.length; i++) {
     gui.__controllers[i].updateDisplay();

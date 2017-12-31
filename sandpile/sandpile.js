@@ -18,10 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     speed: 25,
     starting_point: 'Center',
     start: function() {
-      hide_gui_element('start', true);
-      hide_gui_element('pause', false);
-      hide_gui_element('unpause', true);
-      hide_gui_element('stop', false);
+      hide_gui_element(gui, 'start', true);
+      hide_gui_element(gui, 'pause', false);
+      hide_gui_element(gui, 'unpause', true);
+      hide_gui_element(gui, 'stop', false);
 
       generating = true;
 
@@ -127,26 +127,26 @@ document.addEventListener('DOMContentLoaded', function() {
       step();
     },
     pause: function() {
-      hide_gui_element('start', true);
-      hide_gui_element('pause', true);
-      hide_gui_element('unpause', false);
-      hide_gui_element('stop', true);
+      hide_gui_element(gui, 'start', true);
+      hide_gui_element(gui, 'pause', true);
+      hide_gui_element(gui, 'unpause', false);
+      hide_gui_element(gui, 'stop', true);
 
       paused = true;
     },
     unpause: function() {
-      hide_gui_element('start', true);
-      hide_gui_element('pause', false);
-      hide_gui_element('unpause', true);
-      hide_gui_element('stop', false);
+      hide_gui_element(gui, 'start', true);
+      hide_gui_element(gui, 'pause', false);
+      hide_gui_element(gui, 'unpause', true);
+      hide_gui_element(gui, 'stop', false);
 
       paused = false;
     },
     stop: function() {
-      hide_gui_element('start', false);
-      hide_gui_element('pause', true);
-      hide_gui_element('unpause', true);
-      hide_gui_element('stop', true);
+      hide_gui_element(gui, 'start', false);
+      hide_gui_element(gui, 'pause', true);
+      hide_gui_element(gui, 'unpause', true);
+      hide_gui_element(gui, 'stop', true);
 
       generating = false;
     },
@@ -187,17 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'unpause').name('Unpause');
   gui.add(options, 'stop').name('Stop');
 
-  var hide_gui_element = function(property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
-  hide_gui_element('pause', true);
-  hide_gui_element('unpause', true);
-  hide_gui_element('stop', true);
+  hide_gui_element(gui, 'pause', true);
+  hide_gui_element(gui, 'unpause', true);
+  hide_gui_element(gui, 'stop', true);
 });

@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
       };
 
       generating = true;
-      hide_gui_element('start', true);
-      hide_gui_element('stop', false);
+      hide_gui_element(gui, 'start', true);
+      hide_gui_element(gui, 'stop', false);
 
       clear();
 
@@ -98,8 +98,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (generating) {
           requestAnimationFrame(step);
         } else {
-          hide_gui_element('start', false);
-          hide_gui_element('stop', true);
+          hide_gui_element(gui, 'start', false);
+          hide_gui_element(gui, 'stop', true);
 
           draw();
         }
@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     stop: function() {
       generating = false;
-      hide_gui_element('start', false);
-      hide_gui_element('stop', true);
+      hide_gui_element(gui, 'start', false);
+      hide_gui_element(gui, 'stop', true);
     },
     add_point: function() {
       add_point(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2));
@@ -146,17 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     this.onResize();
   };
 
-  var hide_gui_element = function(property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
-  hide_gui_element('stop', true);
+  hide_gui_element(gui, 'stop', true);
 
   var add_point = function(x, y) {
     var point = {

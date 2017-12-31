@@ -179,16 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'show_original').name('Show original');
   gui.add(options, 'dither').name('Dither');
 
-  var hide_gui_element = function(gui, property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
   hide_gui_element(gui, 'show_original', true);
 
   var image_upload = document.getElementById('image_upload');

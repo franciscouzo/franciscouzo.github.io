@@ -537,16 +537,6 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(genetic_input, 'stop').name('Stop');
   gui.add(genetic_input, 'download_svg').name('Download SVG');
 
-  var hide_gui_element = function(gui, property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
   hide_gui_element(gui, 'load_texture', true);
   hide_gui_element(gui, 'clear', true);
   hide_gui_element(gui, 'stop', true);

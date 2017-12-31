@@ -58,9 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
     sides: 4,
     pointiness: 0.75,
     generate: function() {
-      hide_gui_element('generate', true);
-      hide_gui_element('clear', true);
-      hide_gui_element('stop', false);
+      hide_gui_element(gui, 'generate', true);
+      hide_gui_element(gui, 'clear', true);
+      hide_gui_element(gui, 'stop', false);
 
       generating = true;
 
@@ -114,9 +114,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       generating = false;
 
-      hide_gui_element('generate', false);
-      hide_gui_element('clear', false);
-      hide_gui_element('stop', true);
+      hide_gui_element(gui, 'generate', false);
+      hide_gui_element(gui, 'clear', false);
+      hide_gui_element(gui, 'stop', true);
     },
     download_png: function() {
       download('ishihara.png', canvas.toDataURL('image/png'))
@@ -139,8 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(ishihara_input, 'edge_detection').name("Edge detection");
   gui.add(ishihara_input, 'invert_colors').name("Invert colors");
   gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star']).onChange(function(value) {
-    hide_gui_element('sides', value !== 'Regular polygon' && value !== 'Star');
-    hide_gui_element('pointiness', value !== 'Cross' && value !== 'Star');
+    hide_gui_element(gui, 'sides', value !== 'Regular polygon' && value !== 'Star');
+    hide_gui_element(gui, 'pointiness', value !== 'Cross' && value !== 'Star');
   }).name("Shape");
   gui.add(ishihara_input, 'sides', 3, 12, 1).name("Sides");
   gui.add(ishihara_input, 'pointiness', 0.01, 0.99).name("Pointiness");
@@ -162,19 +162,9 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(ishihara_input, 'download_png').name("Download PNG");
   gui.add(ishihara_input, 'download_svg').name("Download SVG");
 
-  var hide_gui_element = function(property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
-  hide_gui_element('sides', true);
-  hide_gui_element('pointiness', true);
-  hide_gui_element('stop', true);
+  hide_gui_element(gui, 'sides', true);
+  hide_gui_element(gui, 'pointiness', true);
+  hide_gui_element(gui, 'stop', true);
 
   var painting = false;
   var generating = false;

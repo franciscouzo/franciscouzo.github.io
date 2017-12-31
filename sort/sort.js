@@ -685,9 +685,9 @@ document.addEventListener('DOMContentLoaded', function() {
     zoom: 4,
     color_map: 'viridis',
     start: function() {
-      hide_gui_element('shuffle', true);
-      hide_gui_element('start', true);
-      hide_gui_element('stop', false);
+      hide_gui_element(gui, 'shuffle', true);
+      hide_gui_element(gui, 'start', true);
+      hide_gui_element(gui, 'stop', false);
 
       processing = true;
 
@@ -739,9 +739,9 @@ document.addEventListener('DOMContentLoaded', function() {
       step();
     },
     stop: function() {
-      hide_gui_element('shuffle', false);
-      hide_gui_element('start', false);
-      hide_gui_element('stop', true);
+      hide_gui_element(gui, 'shuffle', false);
+      hide_gui_element(gui, 'start', false);
+      hide_gui_element(gui, 'stop', true);
 
       data = sort_visualization.data;
 
@@ -779,10 +779,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var gui = new dat.GUI();
   gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function() {
-    hide_gui_element('pivot', options.algorithm !== 'Quick sort');
-    hide_gui_element('shrink_factor', options.algorithm !== 'Comb sort');
-    hide_gui_element('base', options.algorithm !== 'Radix sort');
-    hide_gui_element('gaps', options.algorithm !== 'Shell sort');
+    hide_gui_element(gui, 'pivot', options.algorithm !== 'Quick sort');
+    hide_gui_element(gui, 'shrink_factor', options.algorithm !== 'Comb sort');
+    hide_gui_element(gui, 'base', options.algorithm !== 'Radix sort');
+    hide_gui_element(gui, 'gaps', options.algorithm !== 'Shell sort');
   });
   gui.add(options, 'pivot', ['Start', 'Middle', 'End', 'Random']).name('Pivot');
   gui.add(options, 'shrink_factor', 1.001, 3).name('Shrink factor');
@@ -808,19 +808,9 @@ document.addEventListener('DOMContentLoaded', function() {
   distribution_folder.add(options.distribution, 'alpha', 0.01).name('Alpha');
   distribution_folder.add(options.distribution, 'beta', 0.01).name('Beta');
 
-  var hide_gui_element = function(property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
-  hide_gui_element('stop', true);
-  hide_gui_element('pivot', true);
-  hide_gui_element('shrink_factor', true);
-  hide_gui_element('base', true);
-  hide_gui_element('gaps', true);
+  hide_gui_element(gui, 'stop', true);
+  hide_gui_element(gui, 'pivot', true);
+  hide_gui_element(gui, 'shrink_factor', true);
+  hide_gui_element(gui, 'base', true);
+  hide_gui_element(gui, 'gaps', true);
 });

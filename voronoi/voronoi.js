@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     point_chance: 1000,
     resize: true,
     generate: function() {
-      hide_gui_element('generate', true);
+      hide_gui_element(gui, 'generate', true);
       var img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
       var data = img_data.data;
 
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (chunk_y * chunk_height < canvas.height) {
           requestAnimationFrame(step);
         } else {
-          hide_gui_element('generate', false);
+          hide_gui_element(gui, 'generate', false);
         }
       };
       requestAnimationFrame(step);
@@ -254,17 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(voronoi_input, 'resize').name("Resize");
   gui.add(voronoi_input, 'generate').name("Generate");
 
-  var hide_gui_element = function(property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
-  hide_gui_element('generate', true);
+  hide_gui_element(gui, 'generate', true);
 
   var image_upload = document.getElementById('image_upload');
 
@@ -295,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
           canvas.height = img.height;
         }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        hide_gui_element('generate', false);
+        hide_gui_element(gui, 'generate', false);
       };
     };
     reader.readAsDataURL(e.target.files[0]);

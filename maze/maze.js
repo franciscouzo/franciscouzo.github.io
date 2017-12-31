@@ -656,10 +656,10 @@ document.addEventListener('DOMContentLoaded', function() {
       image_upload.click();
     },
     start: function() {
-      hide_gui_element('start', true);
-      hide_gui_element('stop', false);
-      hide_gui_element('flood', true);
-      hide_gui_element('color_flood', true);
+      hide_gui_element(gui, 'start', true);
+      hide_gui_element(gui, 'stop', false);
+      hide_gui_element(gui, 'flood', true);
+      hide_gui_element(gui, 'color_flood', true);
 
       generating = true;
 
@@ -717,10 +717,10 @@ document.addEventListener('DOMContentLoaded', function() {
       step();
     },
     stop: function() {
-      hide_gui_element('start', false);
-      hide_gui_element('stop', true);
-      hide_gui_element('flood', false);
-      hide_gui_element('color_flood', false);
+      hide_gui_element(gui, 'start', false);
+      hide_gui_element(gui, 'stop', true);
+      hide_gui_element(gui, 'flood', false);
+      hide_gui_element(gui, 'color_flood', false);
 
       if (maze && maze.stop) {
         maze.stop();
@@ -759,8 +759,8 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(maze_input, 'speed', 1, 50).name('Speed');
   gui.add(maze_input, 'starting_point', ['Top left', 'Center', 'Random']).name('Starting point');
   gui.add(maze_input, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(function(value) {
-    hide_gui_element('mixed_maze_chances', value !== 'Mixed');
-    hide_gui_element('heap_weights', value !== 'Heap');
+    hide_gui_element(gui, 'mixed_maze_chances', value !== 'Mixed');
+    hide_gui_element(gui, 'heap_weights', value !== 'Heap');
   });
   gui.add(maze_input, 'mixed_maze_chances', 0, 1).name('Mixed maze');
   gui.add(maze_input, 'heap_weights').name('Heap weights');
@@ -778,27 +778,17 @@ document.addEventListener('DOMContentLoaded', function() {
   distribution_folder.add(maze_input.distribution, 'alpha', 0.01).name('Alpha');
   distribution_folder.add(maze_input.distribution, 'beta', 0.01).name('Beta');
 
-  var hide_gui_element = function(property, hide) {
-    for (var i = 0; i < gui.__controllers.length; i++) {
-      var controller = gui.__controllers[i];
-      if (controller.property === property) {
-        controller.domElement.parentElement.parentElement.hidden = hide;
-        return;
-      }
-    }
-  };
-
-  hide_gui_element('mixed_maze_chances', true);
-  hide_gui_element('heap_weights', true);
-  hide_gui_element('stop', true);
-  hide_gui_element('flood', true);
-  hide_gui_element('color_flood', true);
+  hide_gui_element(gui, 'mixed_maze_chances', true);
+  hide_gui_element(gui, 'heap_weights', true);
+  hide_gui_element(gui, 'stop', true);
+  hide_gui_element(gui, 'flood', true);
+  hide_gui_element(gui, 'color_flood', true);
 
   var flood = function(colorful) {
-    hide_gui_element('start', true);
-    hide_gui_element('stop', false);
-    hide_gui_element('flood', true);
-    hide_gui_element('color_flood', true);
+    hide_gui_element(gui, 'start', true);
+    hide_gui_element(gui, 'stop', false);
+    hide_gui_element(gui, 'flood', true);
+    hide_gui_element(gui, 'color_flood', true);
 
     flooding = true;
 
@@ -844,10 +834,10 @@ document.addEventListener('DOMContentLoaded', function() {
       speed = Math.pow(speed, 1.1);
       for (var s = 0; s < steps * speed; s++) {
         if (!frontier.length || !flooding) {
-          hide_gui_element('start', false);
-          hide_gui_element('stop', true);
-          hide_gui_element('flood', true);
-          hide_gui_element('color_flood', true);
+          hide_gui_element(gui, 'start', false);
+          hide_gui_element(gui, 'stop', true);
+          hide_gui_element(gui, 'flood', true);
+          hide_gui_element(gui, 'color_flood', true);
 
           return;
         }
