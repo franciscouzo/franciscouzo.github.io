@@ -168,11 +168,11 @@ document.addEventListener('DOMContentLoaded', function() {
       };
 
       gui.add(video, 'width', 1, video.videoWidth, 1).name("Width").onChange(function() {
-        video.height = video.width * (video.videoHeight / video.videoWidth);
+        video.height = Math.max(1, video.width * (video.videoHeight / video.videoWidth));
         update_resolution();
       });
       gui.add(video, 'height', 1, video.videoHeight, 1).name("Height").onChange(function() {
-        video.width = video.height * (video.videoWidth / video.videoHeight);
+        video.width = Math.max(1, video.height * (video.videoWidth / video.videoHeight));
         update_resolution();
       });
 
