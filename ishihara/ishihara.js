@@ -150,10 +150,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }).name("Style");
   gui.add(ishihara_input, 'min_radius', 2, 50).name("Min radius").onChange(function() {
     ishihara_input.max_radius = Math.max(ishihara_input.min_radius, ishihara_input.max_radius);
-  }).listen();
+    update_gui(gui);
+  });
   gui.add(ishihara_input, 'max_radius', 2, 50).name("Max radius").onChange(function() {
     ishihara_input.min_radius = Math.min(ishihara_input.min_radius, ishihara_input.max_radius);
-  }).listen();
+    update_gui(gui);
+  });
   gui.add(ishihara_input, 'draw_ratio', 0, 1, 0.01).name("Draw ratio");
   gui.add(ishihara_input, 'stop_after', 1000, 100000, 1).name("Stop after");
   gui.add(ishihara_input, 'generate').name("Generate");

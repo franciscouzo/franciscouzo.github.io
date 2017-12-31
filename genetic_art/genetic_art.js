@@ -501,18 +501,22 @@ document.addEventListener('DOMContentLoaded', function() {
   var sides_folder = gui.addFolder('Sides');
   sides_folder.add(genetic_input, 'min_sides', 2, 50, 1).name('Min sides').onChange(function(value) {
     genetic_input.max_sides = Math.max(genetic_input.min_sides, genetic_input.max_sides);
-  }).listen();
+    update_gui(sides_folder);
+  });
   sides_folder.add(genetic_input, 'max_sides', 2, 50, 1).name('Max sides').onChange(function(value) {
     genetic_input.min_sides = Math.min(genetic_input.min_sides, genetic_input.max_sides);
-  }).listen();
+    update_gui(sides_folder);
+  });
 
   var radius_folder = gui.addFolder('Radius');
   radius_folder.add(genetic_input, 'min_radius', 5, 100).name('Min radius').onChange(function(value) {
     genetic_input.max_radius = Math.max(genetic_input.min_radius, genetic_input.max_radius);
-  }).listen();
+    update_gui(radius_folder);
+  });
   radius_folder.add(genetic_input, 'max_radius', 5, 100).name('Max radius').onChange(function(value) {
     genetic_input.min_radius = Math.min(genetic_input.min_radius, genetic_input.max_radius);
-  }).listen();
+    update_gui(radius_folder);
+  });
 
   var shape_restriction_folder = gui.addFolder('Shape restriction');
   shape_restriction_folder.add(genetic_input.restriction, 'enable').name('Restrict').onChange(function(value) {
