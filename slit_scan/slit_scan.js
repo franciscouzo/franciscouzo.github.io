@@ -43,12 +43,6 @@ function modify_line(line, x1, y1, x2, y2) {
   return line_element(line, x, y, c, alpha);
 }
 
-function update_gui(gui) {
-  for (var i = 0; i < gui.__controllers.length; i++) {
-    gui.__controllers[i].updateDisplay();
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   navigator.mediaDevices.getUserMedia({video: true, audio: false}).then(function(stream) {
     var video = document.getElementById('video');

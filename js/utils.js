@@ -12,3 +12,9 @@ function hide_gui_element(gui, property, hide) {
     }
   }
 }
+
+function update_gui(gui) {
+  for (var i = 0; i < gui.__controllers.length; i++) {
+    gui.__controllers[i].updateDisplay();
+  }
+}
