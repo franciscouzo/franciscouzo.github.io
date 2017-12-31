@@ -59,11 +59,6 @@ function update_gui(gui) {
   }
 }
 
-function hide_gui_folder(gui, folder_name, hide) {
-  var folder = gui.__folders[folder_name];
-  folder.domElement.parentElement.hidden = hide;
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   navigator.mediaDevices.getUserMedia({video: true, audio: false}).then(function(stream) {
     var video = document.getElementById('video');
