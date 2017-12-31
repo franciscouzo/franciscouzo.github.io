@@ -23,6 +23,16 @@ function random_choice(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+function shuffle(array, start, end) {
+  var m = end - start;
+  while (m) {
+    var i = Math.floor(random() * m--);
+    var tmp = array[start + m];
+    array[start + m] = array[start + i];
+    array[start + i] = tmp;
+  }
+}
+
 var init_shaders = function(gl, fs_source, vs_source) {
   var fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fragment_shader, fs_source);

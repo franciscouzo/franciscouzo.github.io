@@ -10,16 +10,6 @@ var N = 1 << 0,
     W = 1 << 2,
     E = 1 << 3;
 
-function shuffle(array, start, end) {
-  var m = end - start;
-  while (m) {
-    var i = Math.floor(random() * m--);
-    var tmp = array[start + m];
-    array[start + m] = array[start + i];
-    array[start + i] = tmp;
-  }
-}
-
 var SG_MAGICCONST = 1.0 + Math.log(4.5);
 var LOG4 = Math.log(4.0);
 
