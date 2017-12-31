@@ -33,7 +33,7 @@ function shuffle(array, start, end) {
   }
 }
 
-var init_shaders = function(gl, fs_source, vs_source) {
+function init_shaders(gl, fs_source, vs_source) {
   var fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fragment_shader, fs_source);
   gl.compileShader(fragment_shader);
