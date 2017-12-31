@@ -21,10 +21,6 @@ var vertex_shader_source =
   "    v_texCoord = vertexPos;\n" +
   "}";
 
-function random_choice(l) {
-  return l[Math.floor(Math.random() * l.length)];
-}
-
 function random_expr(prob) {
   prob = prob === undefined ? 0.995 : prob;
   if (Math.random() < prob) {

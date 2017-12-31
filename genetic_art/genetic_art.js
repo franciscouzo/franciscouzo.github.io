@@ -4,10 +4,6 @@ function random(min, max) {
   return min + Math.random() * (max - min);
 }
 
-function random_choice(list) {
-  return list[Math.floor(Math.random() * list.length)];
-}
-
 function clamp(x, min, max) {
   var tmp = min;
   min = Math.min(min, max);

@@ -20,10 +20,6 @@ function shuffle(array, start, end) {
   }
 }
 
-function random_choice(arr) {
-  return arr[Math.floor(random() * arr.length)];
-}
-
 var SG_MAGICCONST = 1.0 + Math.log(4.5);
 var LOG4 = Math.log(4.0);
 

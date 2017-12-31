@@ -19,6 +19,10 @@ function update_gui(gui) {
   }
 }
 
+function random_choice(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
 var init_shaders = function(gl, fs_source, vs_source) {
   var fragment_shader = gl.createShader(gl.FRAGMENT_SHADER);
   gl.shaderSource(fragment_shader, fs_source);
