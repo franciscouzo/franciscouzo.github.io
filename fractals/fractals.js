@@ -224,17 +224,55 @@ document.addEventListener('DOMContentLoaded', function() {
     update_hash();
     gui.updateDisplay();
   });
-  /*canvas.addEventListener('gestureend', function(e) {
-    if (e.scale < 1) {
-      options.zoom *= 1.1
-    } else {
-      options.zoom *= 0.9;
+
+  var touch_dragging = false;
+  var dragging_x, dragging_y;
+  var pinching_dist;
+
+  canvas.addEventListener('touchstart', function(e) {
+    touch_dragging = e.touches.length === 1;
+
+    dragging_x = e.touches[0].pageX * (window.devicePixelRatio || 1);
+    dragging_y = e.touches[0].pageY * (window.devicePixelRatio || 1);
+
+    if (e.touches.length === 2) {
+      pinching_dist = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY);
+    }
+
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('touchmove', function(e) {
+    if (touch_dragging && e.touches.length === 1) {
+      var curr_dragging_x = e.touches[0].pageX * (window.devicePixelRatio || 1);
+      var curr_dragging_y = e.touches[0].pageY * (window.devicePixelRatio || 1);
+
+      options.pos.x += (dragging_x - curr_dragging_x) / options.zoom / canvas.height;
+      options.pos.y += (dragging_y - curr_dragging_y) / options.zoom / canvas.height;
+
+      dragging_x = curr_dragging_x;
+      dragging_y = curr_dragging_y;
+    } else if (e.touches.length === 2) {
+      var curr_pinching_dist = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY);
+
+      if (Math.abs(pinching_dist - curr_pinching_dist) > 1) {
+        options.zoom /= 1 + (pinching_dist - curr_pinching_dist) / Math.hypot(canvas.width, canvas.height) * (window.devicePixelRatio || 1);
+      }
+
+      pinching_dist = curr_pinching_dist;
     }
 
     draw();
     update_hash();
     gui.updateDisplay();
-  });*/
+
+    touch_dragging = e.touches.length === 1;
+    e.preventDefault();
+  });
 
   window.addEventListener('resize', function() {
     draw();
