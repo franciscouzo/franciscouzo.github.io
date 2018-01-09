@@ -203,8 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var curr_x = e.pageX - this.offsetLeft;
     var curr_y = e.pageY - this.offsetTop;
 
-    options.pos.x += (mouse_x - curr_x) / options.zoom / canvas.height;
-    options.pos.y += (mouse_y - curr_y) / options.zoom / canvas.height;
+    options.pos.x += (mouse_x - curr_x) / options.zoom / canvas.height * 2;
+    options.pos.y += (mouse_y - curr_y) / options.zoom / canvas.height * 2;
 
     mouse_x = curr_x;
     mouse_y = curr_y;
