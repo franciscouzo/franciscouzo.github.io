@@ -157,7 +157,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  var gui = new dat.GUI();
+  var gui = new dat.GUI({
+    load: {
+      remembered: {
+        "Julia set": [{
+          z0: "p",
+          z: "product(z, z) + vec2(-0.6, 0.5)",
+          condition: "length(z) > 2.0",
+          animate: false
+        }],
+        "Mandelbrot set": [{
+          z0: "vec2(0.0)",
+          z: "product(z, z) + p",
+          condition: "length(z) > 2.0",
+          animate: false
+        }],
+        "Burning ship": [{
+          z0: "vec2(0.0)",
+          z: "power(abs(z), vec2(2.0, 0.0)) + p",
+          condition: "length(z) > 2.0",
+          animate: false
+        }]
+      }
+    }
+  });
+
+  gui.remember(options);
+
   gui.add(options, 'zoom').name('Zoom').onChange(on_change);
   gui.add(options.pos, 'x', -1, 1).name('Pos x').onChange(on_change);
   gui.add(options.pos, 'y', -1, 1).name('Pos y').onChange(on_change);
