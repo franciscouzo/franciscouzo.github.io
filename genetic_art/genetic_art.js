@@ -313,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
     show_tries: true,
     shape_count: 500,
     speed: 1,
+    show_raw_score: false,
     generate: function() {
       hide_gui_element(gui, 'generate', true);
       hide_gui_element(gui, 'clear', true);
@@ -435,8 +436,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         generation_tag.innerHTML = "Generations: " + generations + "<br>" +
-                                   "Evolutions: " + evolutions + "<br>" +
-                                   "Score: " + ((worst_possible_score - best_score) / worst_possible_score * 100).toFixed(3) + "%";
+                                   "Evolutions: " + evolutions + "<br>";
+
+        if (genetic_input.show_raw_score) {
+           generation_tag.innerHTML += "Score: " + best_score;
+        } else {
+           generation_tag.innerHTML += "Score: " + ((worst_possible_score - best_score) / worst_possible_score * 100).toFixed(3) + "%";
+        }
 
         requestAnimationFrame(step);
       };
@@ -521,6 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(genetic_input, 'show_tries').name('Show tries');
   gui.add(genetic_input, 'shape_count', 50, 5000).name('Shape count');
   gui.add(genetic_input, 'speed', 1, 25, 1).name('Speed');
+  gui.add(genetic_input, 'show_raw_score').name('Show raw score');
   gui.add(genetic_input, 'generate').name('Generate');
   gui.add(genetic_input, 'clear').name('Clear');
   gui.add(genetic_input, 'stop').name('Stop');
