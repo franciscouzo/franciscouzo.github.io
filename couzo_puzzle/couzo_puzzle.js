@@ -116,11 +116,13 @@ Game.prototype.draw_circle = function(circle_idx) {
 
     for (var i = 0; i < 12; i += 2) {
         var center_piece = this.center_pieces[this.data[circle_idx].pieces[i]]
-        ctx.drawImage(
-            center_piece,
-            -center_piece.width / 2,
-            this.radius * this.piece_ratio / 2
-        )
+        if (center_piece.width) {
+            ctx.drawImage(
+                center_piece,
+                -center_piece.width / 2,
+                this.radius * this.piece_ratio / 2
+            )
+        }
         ctx.rotate(Math.PI / 3)
     }
     ctx.restore()
