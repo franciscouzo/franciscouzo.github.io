@@ -1,28 +1,7 @@
 importScripts('shape_factories.js', '../js/kdTree.js', 'jspolygon.js');
 
-var colors_on = [
-  ['#F9BB82', '#EBA170', '#FCCD84'],
-  ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674'],
-  ['#89B270', '#7AA45E', '#B6C674', '#7AA45E', '#B6C674', '#FECB05'],
-  ['#E96B6C', '#F7989C'],
-  ['#AD5277', '#F7989C'],
-  ['#FF934F'],
-  ['#A8AA00', '#83BE28']
-];
-var colors_off =  [
-  ['#9CA594', '#ACB4A5', '#BBB964', '#D7DAAA', '#E5D57D', '#D1D6AF'],
-  ['#F49427', '#C9785D', '#E88C6A', '#F1B081'],
-  ['#F49427', '#C9785D', '#E88C6A', '#F1B081', '#FFCE00'],
-  ['#635A4A', '#817865', '#9C9C84'],
-  ['#635A4A', '#817865', '#9C9C84'],
-  ['#9C9C9C'],
-  ['#828200', '#669A1B', '#828200', '#669A1B', '#ED6311']
-];
-
 onmessage = function(e) {
   var options = e.data;
-
-  var draw_style = Number(options.style);
 
   var shape_factory = {
     'Circle': CircleFactory,
@@ -80,9 +59,9 @@ onmessage = function(e) {
     tries = 0;
 
     if (overlaps_image !== options.invert_colors) {
-      var style = colors_on[draw_style][Math.floor(Math.random() * colors_on[draw_style].length)];
+      var style = options['color_on' + Math.floor(Math.random() * options.n_colors_on)];
     } else {
-      var style = colors_off[draw_style][Math.floor(Math.random() * colors_off[draw_style].length)];
+      var style = options['color_off' + Math.floor(Math.random() * options.n_colors_off)];
     }
 
     for (var i = 0; i < shapes.length; i++) {
