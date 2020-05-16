@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     resize: true,
     edge_detection: true,
     invert_colors: false,
+    background_color: '#FFFFFF',
     n_colors_on: 3,
     n_colors_off: 6,
     color_on0: '#F9BB82',
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
       generating = true;
 
       var img_data = img_ctx.getImageData(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "white";
+      ctx.fillStyle = ishihara_input.background_color;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       var shape_factory = {
@@ -232,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(ishihara_input, 'resize').name("Resize");
   gui.add(ishihara_input, 'edge_detection').name("Edge detection");
   gui.add(ishihara_input, 'invert_colors').name("Invert colors");
+  gui.addColor(ishihara_input, 'background_color').name("Background color");
   gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star']).onChange(function(value) {
     hide_gui_element(gui, 'sides', value !== 'Regular polygon' && value !== 'Star');
     hide_gui_element(gui, 'pointiness', value !== 'Cross' && value !== 'Star');
