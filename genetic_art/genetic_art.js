@@ -53,10 +53,13 @@ PolygonFactory.prototype.tweak_point = function(point) {
 }
 
 PolygonFactory.prototype.generate = function() {
-  var polygon = {r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256),
-                 b: Math.floor(Math.random() * 256), a: Math.random(), points: []};
+  var polygon = {
+    r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256),
+    b: Math.floor(Math.random() * 256), a: Math.random(), points: []
+  };
 
-  var sides = Math.floor(this.options.min_sides + Math.random() * (this.options.max_sides - this.options.min_sides));
+  var sides = Math.floor(random(this.options.min_sides, this.options.max_sides));
+
   for (var i = 0; i < sides; i++) {
     polygon.points.push(this.generate_point());
   }
@@ -71,7 +74,6 @@ PolygonFactory.prototype.tweak = function(polygon) {
   }
 
   new_polygon.points = polygon.points.slice();
-
   var r = random(0, polygon.points.length + 4);
   if (r < 3) {
     var color = random_choice(['r', 'g', 'b']);
@@ -288,13 +290,13 @@ function rgb2hex(red, green, blue) {
 document.addEventListener('DOMContentLoaded', function() {
   var shapes = [];
   var shape_factory;
+  var img_data;
 
   var genetic_input = {
     load_image: function() {
       image_upload.click();
     },
     algorithm: 'Simulated annealing',
-    invert: false,
     style: 'Regular polygons',
     min_sides: 4,
     max_sides: 4,
@@ -308,12 +310,13 @@ document.addEventListener('DOMContentLoaded', function() {
     load_texture: function() {
       texture_upload.click();
     },
-    resize: true,
+    resize: false,
+    maintain_aspect_ratio: true,
+    width: 512,
+    height: 512,
     overdraw: false,
-    show_tries: true,
     shape_count: 500,
     speed: 1,
-    show_raw_score: false,
     generate: function() {
       hide_gui_element(gui, 'generate', true);
       hide_gui_element(gui, 'clear', true);
@@ -321,10 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       generating = true;
 
-      var img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
       var best_canvas = document.createElement('canvas');
-      best_canvas.width  = canvas.width;
+      best_canvas.width = canvas.width;
       best_canvas.height = canvas.height;
       var best_ctx = best_canvas.getContext('2d');
 
@@ -356,7 +357,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       var best_score = get_score(img_data, best_ctx.getImageData(0, 0, canvas.width, canvas.height));
-      var worst_possible_score = best_score;
 
       var generation_tag = document.getElementById('generation');
 
@@ -374,6 +374,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       };
 
+      var tmp_canvas = document.createElement('canvas');
+      tmp_canvas.width = canvas.width;
+      tmp_canvas.height = canvas.height;
+      var tmp_ctx = tmp_canvas.getContext('2d');
+
       var step = function() {
         if (!generating) {
           generating = false;
@@ -388,10 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (var j = 0; j < genetic_input.speed; j++) {
           generations++;
 
-          var curr_canvas = document.createElement('canvas');
-          curr_canvas.width  = canvas.width;
-          curr_canvas.height = canvas.height;
-          var curr_ctx = curr_canvas.getContext('2d');
+          tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 
           if (!overdraw) {
             var old_shapes = shapes.slice();
@@ -412,37 +414,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             for (var i = 0; i < shape_n; i++) {
-              shape_factory.draw(curr_ctx, shapes[i]);
+              shape_factory.draw(tmp_ctx, shapes[i]);
             }
           } else {
-            curr_ctx.drawImage(canvas, 0, 0);
+            tmp_ctx.drawImage(canvas, 0, 0);
             var shape = shape_factory.generate();
-            shape_factory.draw(curr_ctx, shape);
+            shape_factory.draw(tmp_ctx, shape);
           }
 
-          var curr_img_data = curr_ctx.getImageData(0, 0, canvas.width, canvas.height);
-          var score = get_score(img_data, curr_img_data);
+          var tmp_img_data = tmp_ctx.getImageData(0, 0, canvas.width, canvas.height);
+          var score = get_score(img_data, tmp_img_data);
 
-          if (accept_new_state_algorithms[genetic_input.algorithm](score, best_score, generations) !== genetic_input.invert) {
+          if (accept_new_state_algorithms[genetic_input.algorithm](score, best_score, generations)) {
             best_score = score;
-            ctx.putImageData(curr_img_data, 0, 0);
+            ctx.putImageData(tmp_img_data, 0, 0);
             evolutions++
           } else if (!overdraw) {
             shapes = old_shapes;
-            if (genetic_input.show_tries) {
-              ctx.putImageData(curr_img_data, 0, 0);
-            }
           }
         }
 
         generation_tag.innerHTML = "Generations: " + generations + "<br>" +
-                                   "Evolutions: " + evolutions + "<br>";
-
-        if (genetic_input.show_raw_score) {
-           generation_tag.innerHTML += "Score: " + best_score;
-        } else {
-           generation_tag.innerHTML += "Score: " + ((worst_possible_score - best_score) / worst_possible_score * 100).toFixed(3) + "%";
-        }
+                                   "Evolutions: " + evolutions + "<br>" +
+                                   "Score: " + best_score;
 
         requestAnimationFrame(step);
       };
@@ -481,7 +475,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var gui = new dat.GUI();
   gui.add(genetic_input, 'load_image').name('Load image');
   gui.add(genetic_input, 'algorithm', ['Simulated annealing', 'Hill climbing']).name('Algorithm');
-  gui.add(genetic_input, 'invert').name('Invert');
   gui.add(genetic_input, 'style', ['Polygons', 'Regular polygons', 'Textures']).name('Style').onChange(function(value) {
     hide_gui_folder(gui, 'Radius', value !== 'Regular polygons' && value !== 'Textures');
     hide_gui_folder(gui, 'Shape restriction', value !== 'Polygons');
@@ -519,21 +512,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
   gui.add(genetic_input, 'load_texture').name('Load texture');
 
-  gui.add(genetic_input, 'resize').name('Resize');
+  gui.add(genetic_input, 'resize').name('Resize').onChange(function(value) {
+    hide_gui_element(gui, 'maintain_aspect_ratio', !value);
+    hide_gui_element(gui, 'width', !value);
+    hide_gui_element(gui, 'height', !value);
+  });
+  gui.add(genetic_input, 'maintain_aspect_ratio').name('Maintain aspect ratio');
+  gui.add(genetic_input, 'width', 64, 1024, 1).name('Width');
+  gui.add(genetic_input, 'height', 64, 1024, 1).name('Height');
+
   gui.add(genetic_input, 'overdraw').name('Overdraw').onChange(function(value) {
-    hide_gui_element(gui, 'show_tries', value);
     hide_gui_element(gui, 'shape_count', value);
   });
-  gui.add(genetic_input, 'show_tries').name('Show tries');
-  gui.add(genetic_input, 'shape_count', 50, 5000).name('Shape count');
+  gui.add(genetic_input, 'shape_count', 1, 5000).name('Shape count');
   gui.add(genetic_input, 'speed', 1, 25, 1).name('Speed');
-  gui.add(genetic_input, 'show_raw_score').name('Show raw score');
   gui.add(genetic_input, 'generate').name('Generate');
   gui.add(genetic_input, 'clear').name('Clear');
   gui.add(genetic_input, 'stop').name('Stop');
   gui.add(genetic_input, 'download_svg').name('Download SVG');
 
   hide_gui_element(gui, 'load_texture', true);
+  hide_gui_element(gui, 'maintain_aspect_ratio', true);
+  hide_gui_element(gui, 'width', true);
+  hide_gui_element(gui, 'height', true);
   hide_gui_element(gui, 'clear', true);
   hide_gui_element(gui, 'stop', true);
   hide_gui_element(gui, 'download_svg', true);
@@ -551,9 +552,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var texture_canvas = document.createElement('canvas');
 
-  ctx.canvas.width  = window.innerWidth;
-  ctx.canvas.height = window.innerHeight;
-
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -568,14 +566,20 @@ document.addEventListener('DOMContentLoaded', function() {
       img.src = event.target.result;
       img.onload = function() {
         if (genetic_input.resize) {
-          var ratio = Math.min(canvas.width / img.width, canvas.height / img.height);
-          canvas.width  = img.width  * ratio;
-          canvas.height = img.height * ratio;
+          if (genetic_input.maintain_aspect_ratio) {
+            var ratio = Math.min(genetic_input.width / img.width, genetic_input.height / img.height);
+            canvas.width = img.width * ratio;
+            canvas.height = img.height * ratio;
+          } else {
+            canvas.width = genetic_input.width;
+            canvas.height = genetic_input.height;
+          }
         } else {
           canvas.width = img.width;
           canvas.height = img.height;
         }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
       }
     }
     reader.readAsDataURL(e.target.files[0]);
