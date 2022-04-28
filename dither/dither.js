@@ -152,25 +152,29 @@ document.addEventListener('DOMContentLoaded', function() {
                                               [1, 1, 0]], 1 / 4)
   };
 
+  var change = function() {
+    algorithms[options.algorithm]();
+    hide_gui_element(gui, 'dither', true);
+    hide_gui_element(gui, 'show_original', false);
+  }
+
   var options = {
     load_image: function() {
       image_upload.click();
     },
     algorithm: 'Floyd–Steinberg',
     threshold: 127,
-    dither: function() {
-      hide_gui_element(gui, 'show_original', false);
-
-      algorithms[options.algorithm]();
-    },
+    dither: change,
     show_original: function() {
       ctx.drawImage(original_image, 0, 0);
+      hide_gui_element(gui, 'dither', false);
+      hide_gui_element(gui, 'show_original', true);
     }
   };
 
   var gui = new dat.GUI();
   gui.add(options, 'load_image').name('Load image');
-  gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm');
+  gui.add(options, 'algorithm', Object.keys(algorithms)).name('Algorithm').onChange(change);
   gui.add(options, 'threshold', 0, 255);
   //var palette_folder = gui.addFolder('Palette');
   // TODO: add palette, and auto k-means palette selection, and some presets, such as 16, 256, etc
@@ -179,14 +183,13 @@ document.addEventListener('DOMContentLoaded', function() {
   gui.add(options, 'show_original').name('Show original');
   gui.add(options, 'dither').name('Dither');
 
+  hide_gui_element(gui, 'dither', true);
   hide_gui_element(gui, 'show_original', true);
 
   var image_upload = document.getElementById('image_upload');
 
   var canvas = document.getElementById('canvas');
   var ctx = canvas.getContext('2d');
-
-  var texture_canvas = document.createElement('canvas');
 
   ctx.canvas.width  = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
@@ -203,13 +206,13 @@ document.addEventListener('DOMContentLoaded', function() {
       var img = new Image();
       img.src = event.target.result;
       img.onload = function() {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
         original_image.width = img.width;
         original_image.height = img.height;
         original_image_ctx.drawImage(img, 0, 0);
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        change()
       }
     }
     reader.readAsDataURL(e.target.files[0]);
