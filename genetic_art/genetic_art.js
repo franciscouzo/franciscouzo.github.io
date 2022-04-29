@@ -1,602 +1,578 @@
-'use strict';
+'use strict'
 
 function random(min, max) {
-  return min + Math.random() * (max - min);
+  return min + Math.random() * (max - min)
 }
 
 function clamp(x, min, max) {
-  var tmp = min;
-  min = Math.min(min, max);
-  max = Math.max(tmp, max);
-  return Math.min(max, Math.max(min, x));
+  [min, max] = [Math.min(min, max), Math.max(min, max)]
+  return Math.min(max, Math.max(min, x))
 }
 
 
-function PolygonFactory(width, height, options) {
-  this.width = width;
-  this.height = height;
-  this.options = options;
-}
-
-PolygonFactory.prototype.generate_point = function() {
-  if (this.options.restriction.enable) {
-    var sides = this.options.restriction.sides;
-    var angle = this.options.restriction.angle;
-    var radius = Math.min(this.width, this.height) / 2;
-
-    var i1 = Math.floor(Math.random() * sides);
-    var i2 = (i1 + 1) % sides;
-
-    var x1 = Math.cos(i1 / sides * 2 * Math.PI + angle) * radius + this.width  / 2;
-    var y1 = Math.sin(i1 / sides * 2 * Math.PI + angle) * radius + this.height / 2;
-
-    var x2 = Math.cos(i2 / sides * 2 * Math.PI + angle) * radius + this.width  / 2;
-    var y2 = Math.sin(i2 / sides * 2 * Math.PI + angle) * radius + this.height / 2;
-
-    var t = Math.random();
-    var x = (1 - t) * x1 + t * x2;
-    var y = (1 - t) * y1 + t * y2;
-
-    return [x, y];
-  } else {
-    return [random(0, this.width), random(0, this.height)];
-  }
-}
-
-PolygonFactory.prototype.tweak_point = function(point) {
-  if (this.options.restriction.enable) {
-    return this.generate_point();
-  } else {
-    return [clamp(point[0] + random(-this.width  / 10, this.width  / 10), 0, this.width),
-            clamp(point[1] + random(-this.height / 10, this.height / 10), 0, this.height)];
-  }
-}
-
-PolygonFactory.prototype.generate = function() {
-  var polygon = {
-    r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256),
-    b: Math.floor(Math.random() * 256), a: Math.random(), points: []
-  };
-
-  var sides = Math.floor(random(this.options.min_sides, this.options.max_sides));
-
-  for (var i = 0; i < sides; i++) {
-    polygon.points.push(this.generate_point());
+class PolygonFactory {
+  constructor(width, height, options) {
+    this.width = width
+    this.height = height
+    this.options = options
   }
 
-  return polygon;
-};
+  generatePoint() {
+    if (this.options.restriction.enable) {
+      const sides = this.options.restriction.sides
+      const angle = this.options.restriction.angle
+      const radius = Math.min(this.width, this.height) / 2
 
-PolygonFactory.prototype.tweak = function(polygon) {
-  var new_polygon = {};
-  for (var k in polygon) {
-    new_polygon[k] = polygon[k];
-  }
+      const i1 = Math.floor(Math.random() * sides)
+      const i2 = (i1 + 1) % sides
 
-  new_polygon.points = polygon.points.slice();
-  var r = random(0, polygon.points.length + 4);
-  if (r < 3) {
-    var color = random_choice(['r', 'g', 'b']);
-    new_polygon[color] = clamp(polygon[color] + random(-25, 25), 0, 255);
-  } else if (r < 4) {
-    new_polygon.a = clamp(polygon.a + random(-0.1, 0.1), 0, 1);
-  } else {
-    var i = Math.floor(Math.random() * polygon.points.length);
-    if (polygon.points.length > this.options.min_sides && Math.random() < 0.1) {
-      new_polygon.points.splice(i, 1);
-    } else if (polygon.points.length < this.options.max_sides && Math.random() < 0.1) {
-      new_polygon.points.splice(i, 0, this.generate_point());
-    } else if (Math.random() < 0.5) {
-      var j = Math.floor(Math.random() * polygon.points.length);
-      new_polygon.points[i] = polygon.points[j];
-      new_polygon.points[j] = polygon.points[i];
+      const x1 = Math.cos(i1 / sides * 2 * Math.PI + angle) * radius + this.width  / 2
+      const y1 = Math.sin(i1 / sides * 2 * Math.PI + angle) * radius + this.height / 2
+
+      const x2 = Math.cos(i2 / sides * 2 * Math.PI + angle) * radius + this.width  / 2
+      const y2 = Math.sin(i2 / sides * 2 * Math.PI + angle) * radius + this.height / 2
+
+      const t = Math.random()
+      const x = (1 - t) * x1 + t * x2
+      const y = (1 - t) * y1 + t * y2
+
+      return [x, y]
     } else {
-      new_polygon.points[i] = this.tweak_point(polygon.points[i]);
+      return [random(0, this.width), random(0, this.height)]
     }
   }
 
-  return new_polygon;
-};
-
-PolygonFactory.prototype.draw = function(ctx, polygon) {
-  var style = 'rgba(' + polygon.r + ', ' + polygon.g + ', ' + polygon.b + ', ' + polygon.a + ')';
-  ctx.strokeStyle = ctx.fillStyle = style;
-
-  ctx.beginPath();
-  ctx.moveTo(polygon.points[0][0], polygon.points[0][1]);
-  for (var i = 0; i < polygon.points.length; i++) {
-    ctx.lineTo(polygon.points[i][0], polygon.points[i][1]);
-  }
-
-  if (polygon.points.length === 2) {
-    ctx.stroke();
-  } else {
-    ctx.fill();
-  }
-};
-
-PolygonFactory.prototype.svg = function(polygon) {
-  var style = rgb2hex(polygon.r, polygon.g, polygon.b);
-  var points = [];
-  for (var i = 0; i < polygon.points.length; i++) {
-    points.push(polygon.points[i][0] + ',' + polygon.points[i][1]);
-  }
-  return '<polygon points="' + points.join(' ') + '" fill="' + style + '" opacity="' + polygon.a + '"/>';
-};
-
-function RegularPolygonFactory(width, height, options) {
-  this.width = width;
-  this.height = height;
-  this.options = options;
-}
-
-RegularPolygonFactory.prototype.generate = function() {
-  return {
-    r: Math.floor(Math.random() * 256), g: Math.floor(Math.random() * 256),
-    b: Math.floor(Math.random() * 256), a: Math.random(),
-    sides: Math.floor(random(this.options.min_sides, this.options.max_sides)),
-    x: random(0, this.width), y: random(0, this.height),
-    radius: random(this.options.min_radius, this.options.max_radius),
-    angle: random(0, 2 * Math.PI)
-  };
-};
-
-RegularPolygonFactory.prototype.tweak = function(polygon) {
-  var new_polygon = {};
-  for (var k in polygon) {
-    new_polygon[k] = polygon[k];
-  }
-
-  var r = random(0, 10);
-  if (r < 4 && (polygon.sides > this.options.min_sides ||
-                polygon.sides < this.options.max_sides)) {
-    if (polygon.sides > this.options.min_sides) {
-      new_polygon.sides--;
-    } else if (polygon.sides < this.options.max_sides) {
-      new_polygon.sides++;
+  tweakPoint(point) {
+    if (this.options.restriction.enable) {
+      return this.generatePoint()
+    } else {
+      return [clamp(point[0] + random(-this.width  / 10, this.width  / 10), 0, this.width),
+              clamp(point[1] + random(-this.height / 10, this.height / 10), 0, this.height)]
     }
-  } else if (r < 6) {
-    var color = random_choice(['r', 'g', 'b']);
-    new_polygon[color] = clamp(polygon[color] + random(-25, 25), 0, 255);
-  } else if (r < 7) {
-    new_polygon.a = clamp(polygon.a + random(-0.1, 0.1), 0, 1);
-  } else {
-    new_polygon.angle = (polygon.angle + random(-0.1, 0.1)) % (2 * Math.PI);
   }
 
-  return new_polygon;
-};
+  generate() {
+    const points = []
+    const sides = Math.floor(random(this.options.minSides, this.options.maxSides))
 
-RegularPolygonFactory.prototype.get_point = function(polygon, i) {
-  return [Math.cos(i / polygon.sides * 2 * Math.PI + polygon.angle) * polygon.radius + polygon.x,
-          Math.sin(i / polygon.sides * 2 * Math.PI + polygon.angle) * polygon.radius + polygon.y];
-};
+    for (let i = 0; i < sides; i++) {
+      points.push(this.generatePoint())
+    }
 
-RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
-  var style = 'rgba(' + polygon.r + ', ' + polygon.g + ', ' + polygon.b + ', ' + polygon.a + ')';
-  ctx.strokeStyle = ctx.fillStyle = style;
+    return {
+      r: Math.floor(Math.random() * 256),
+      g: Math.floor(Math.random() * 256),
+      b: Math.floor(Math.random() * 256),
+      a: Math.random(),
+      points
+    }
+  }
 
-  ctx.beginPath();
-  if (polygon.sides === 50) {
-    ctx.arc(polygon.x, polygon.y, polygon.radius, 0, 2 * Math.PI);
-  } else {
-    for (var i = 0; i < polygon.sides; i++) {
-      var xy = this.get_point(polygon, i);
-      if (i === 0) {
-        ctx.moveTo(xy[0], xy[1]);
+  tweak(polygon) {
+    const newPolygon = Object.assign({}, polygon)
+    newPolygon.points = polygon.points.slice()
+    const r = random(0, polygon.points.length + 4)
+    if (r < 3) {
+      const color = random_choice(['r', 'g', 'b'])
+      newPolygon[color] = clamp(polygon[color] + random(-25, 25), 0, 255)
+    } else if (r < 4) {
+      newPolygon.a = clamp(polygon.a + random(-0.1, 0.1), 0, 1)
+    } else {
+      const i = Math.floor(Math.random() * polygon.points.length)
+      if (polygon.points.length > this.options.minSides && Math.random() < 0.1) {
+        newPolygon.points.splice(i, 1)
+      } else if (polygon.points.length < this.options.maxSides && Math.random() < 0.1) {
+        newPolygon.points.splice(i, 0, this.generatePoint())
+      } else if (Math.random() < 0.5) {
+        const j = Math.floor(Math.random() * polygon.points.length)
+        newPolygon.points[i] = polygon.points[j]
+        newPolygon.points[j] = polygon.points[i]
       } else {
-        ctx.lineTo(xy[0], xy[1]);
+        newPolygon.points[i] = this.tweakPoint(polygon.points[i])
       }
     }
-  }
-  if (polygon.sides === 2) {
-    ctx.stroke();
-  } else {
-    ctx.fill();
-  }
-};
 
-RegularPolygonFactory.prototype.svg = function(polygon) {
-  var style = rgb2hex(polygon.r, polygon.g, polygon.b);
+    return newPolygon
+  }
 
-  if (polygon.sides === 50) {
-    return '<circle cx="' + polygon.x + '" cy="' + polygon.y + '" ' +
-           'r="' + polygon.radius + '" fill="' + style + '" />';
-  } else {
-    var points = [];
-    for (var i = 0; i < polygon.sides; i++) {
-      var xy = this.get_point(polygon, i);
-      points.push(xy.join());
+  draw(ctx, polygon) {
+    const style = `rgba(${polygon.r}, ${polygon.g}, ${polygon.b}, ${polygon.a})`
+    ctx.strokeStyle = ctx.fillStyle = style
+
+    ctx.beginPath()
+    ctx.moveTo(polygon.points[0][0], polygon.points[0][1])
+    for (let i = 0; i < polygon.points.length; i++) {
+      ctx.lineTo(polygon.points[i][0], polygon.points[i][1])
     }
-    return '<polygon points="' + points.join(' ') + '" fill="' + style + '" opacity="' + polygon.a + '"/>';
-  }
-};
 
-function TextureFactory(width, height, options, texture_canvas) {
-  this.width = width;
-  this.height = height;
-  this.options = options;
-  this.texture_canvas = texture_canvas;
+    if (polygon.points.length === 2) {
+      ctx.stroke()
+    } else {
+      ctx.fill()
+    }
+  }
+
+  svg(polygon) {
+    const style = rgb2hex(polygon.r, polygon.g, polygon.b)
+    const points = polygon.points.map(([x, y]) => `${x},${y}`)
+    return `<polygon points="${points.join(' ')}" fill="${style}" opacity="${polygon.a}"/>`
+  }
 }
 
-TextureFactory.prototype.generate = function() {
-  return {
-    a: Math.random(), x: random(0, this.width), y: random(0, this.height),
-    radius: random(this.options.min_radius, this.options.max_radius),
-    angle: random(0, 2 * Math.PI)
-  };
-};
-
-TextureFactory.prototype.tweak = function(texture) {
-  var new_texture = {};
-  for (var k in texture) {
-    new_texture[k] = texture[k];
+class RegularPolygonFactory extends PolygonFactory {
+  generate() {
+    return {
+      r: Math.floor(Math.random() * 256),
+      g: Math.floor(Math.random() * 256),
+      b: Math.floor(Math.random() * 256),
+      a: Math.random(),
+      sides: Math.floor(random(this.options.minSides, this.options.maxSides)),
+      x: random(0, this.width), y: random(0, this.height),
+      radius: random(this.options.minRadius, this.options.maxRadius),
+      angle: random(0, 2 * Math.PI)
+    }
   }
 
-  var r = random(0, 5);
-  if (r < 1) {
-    new_texture.a = clamp(texture.a + random(-0.1, 0.1), 0, 1);
-  } else if (r < 2) {
-    new_texture.x = clamp(texture.x + random(-0.1, 0.1) * this.width,  -texture.radius, this.width  + texture.radius);
-  } else if (r < 3) {
-    new_texture.y = clamp(texture.y + random(-0.1, 0.1) * this.height, -texture.radius, this.height + texture.radius);
-  } else if (r < 4) {
-    new_texture.radius = clamp(texture.radius + random(this.options.min_radius, this.options.max_radius) / 10, this.options.min_radius, this.options.max_radius);
-  } else {
-    new_texture.angle = (texture.angle + random(-0.1, 0.1)) % (2 * Math.PI);
+  tweak(polygon) {
+    const newPolygon = Object.assign({}, polygon)
+    const r = random(0, 10)
+    if (r < 4 && (polygon.sides > this.options.minSides || polygon.sides < this.options.maxSides)) {
+      if (polygon.sides > this.options.minSides) {
+        newPolygon.sides--
+      } else if (polygon.sides < this.options.maxSides) {
+        newPolygon.sides++
+      }
+    } else if (r < 6) {
+      const color = random_choice(['r', 'g', 'b'])
+      newPolygon[color] = clamp(polygon[color] + random(-25, 25), 0, 255)
+    } else if (r < 7) {
+      newPolygon.a = clamp(polygon.a + random(-0.1, 0.1), 0, 1)
+    } else {
+      newPolygon.angle = (polygon.angle + random(-0.1, 0.1)) % (2 * Math.PI)
+    }
+
+    return newPolygon
   }
 
-  return new_texture;
-};
-
-TextureFactory.prototype.draw = function(ctx, texture) {
-  ctx.save();
-  ctx.globalAlpha = texture.a;
-  ctx.translate(texture.x, texture.y);
-  ctx.rotate(texture.angle);
-  if (texture.width > texture.height) {
-    var width = texture.radius;
-    var height = texture.radius * this.texture_canvas.height / this.texture_canvas.width;
-  } else {
-    var width = texture.radius * this.texture_canvas.width / this.texture_canvas.height;
-    var height = texture.radius;
-  }
-  ctx.drawImage(this.texture_canvas, -width / 2, -height / 2, width, height);
-  ctx.restore();
-};
-
-var get_score = function(orig_img_data, img_data) {
-  var orig_data = orig_img_data.data;
-  var data = img_data.data;
-
-  var w = orig_img_data.width;
-  var h = orig_img_data.height;
-
-  var score = 0;
-
-  for (var i = 0; i < w * h * 4; i++) {
-    //score += Math.pow((orig_data[i] - data[i]) / 255, 2);
-    score += Math.abs(orig_data[i] - data[i]);
+  getPoint(polygon, i) {
+    const rot = i / polygon.sides * 2 * Math.PI + polygon.angle
+    return [
+      Math.cos(rot) * polygon.radius + polygon.x,
+      Math.sin(rot) * polygon.radius + polygon.y
+    ]
   }
 
-  return score;
-};
+  draw(ctx, polygon) {
+    const style = `rgba(${polygon.r}, ${polygon.g}, ${polygon.b}, ${polygon.a})`
+    ctx.strokeStyle = ctx.fillStyle = style
+
+    ctx.beginPath()
+    if (polygon.sides === 50) {
+      ctx.arc(polygon.x, polygon.y, polygon.radius, 0, 2 * Math.PI)
+    } else {
+      for (let i = 0; i < polygon.sides; i++) {
+        const [x, y] = this.getPoint(polygon, i)
+        if (i === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          ctx.lineTo(x, y)
+        }
+      }
+    }
+
+    if (polygon.sides === 2) {
+      ctx.stroke()
+    } else {
+      ctx.fill()
+    }
+  }
+
+  svg(polygon) {
+    const style = rgb2hex(polygon.r, polygon.g, polygon.b)
+
+    if (polygon.sides === 50) {
+      return `<circle cx="${polygon.x}" cy="${polygon.y}" r="${polygon.radius}" fill="${style}" />`
+    } else {
+      const points = []
+      for (let i = 0; i < polygon.sides; i++) {
+        const [x, y] = this.getPoint(polygon, i)
+        points.push(`${x},${y}`)
+      }
+      return `<polygon points="${points.join(' ')}" fill="${style}" opacity="${polygon.a}"/>`
+    }
+  }
+}
+
+class TextureFactory {
+  constructor(width, height, options, textureCanvas) {
+    this.width = width
+    this.height = height
+    this.options = options
+    this.textureCanvas = textureCanvas
+  }
+
+  generate() {
+    return {
+      a: Math.random(),
+      x: random(0, this.width),
+      y: random(0, this.height),
+      radius: random(this.options.minRadius, this.options.maxRadius),
+      angle: random(0, 2 * Math.PI)
+    }
+  }
+
+  tweak(texture) {
+    const newTexture = Object.assign({}, texture)
+
+    const r = random(0, 5)
+    if (r < 1) {
+      newTexture.a = clamp(texture.a + random(-0.1, 0.1), 0, 1)
+    } else if (r < 2) {
+      newTexture.x = clamp(texture.x + random(-0.1, 0.1) * this.width,  -texture.radius, this.width  + texture.radius)
+    } else if (r < 3) {
+      newTexture.y = clamp(texture.y + random(-0.1, 0.1) * this.height, -texture.radius, this.height + texture.radius)
+    } else if (r < 4) {
+      newTexture.radius = clamp(texture.radius + random(this.options.minRadius, this.options.maxRadius) / 10, this.options.minRadius, this.options.maxRadius)
+    } else {
+      newTexture.angle = (texture.angle + random(-0.1, 0.1)) % (2 * Math.PI)
+    }
+
+    return newTexture
+  }
+
+  draw(ctx, texture) {
+    ctx.save()
+    ctx.globalAlpha = texture.a
+    ctx.translate(texture.x, texture.y)
+    ctx.rotate(texture.angle)
+
+    let width = texture.radius
+    let height = texture.radius
+
+    if (texture.width > texture.height) {
+      height *= this.textureCanvas.height / this.textureCanvas.width
+    } else {
+      width *= this.textureCanvas.width / this.textureCanvas.height
+    }
+
+    ctx.drawImage(this.textureCanvas, -width / 2, -height / 2, width, height)
+    ctx.restore()
+  }
+}
+
+function getScore(origImgData, imgData) {
+  const { data: origData, width, height } = origImgData
+  const { data } = imgData
+
+  let score = 0
+
+  for (let i = 0; i < width * height * 4; i++) {
+    //score += Math.pow((origData[i] - data[i]) / 255, 2)
+    score += Math.abs(origData[i] - data[i])
+  }
+
+  return score
+}
 
 function rgb2hex(red, green, blue) {
-  var rgb = blue | (green << 8) | (red << 16);
-  return '#' + (0x1000000 + rgb).toString(16).slice(1);
+  const rgb = blue | (green << 8) | (red << 16)
+  return '#' + (0x1000000 + rgb).toString(16).slice(1)
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var shapes = [];
-  var shape_factory;
-  var img_data;
+  let shapes = []
+  let shapeFactory
+  let imgData
 
-  var genetic_input = {
-    load_image: function() {
-      image_upload.click();
+  const options = {
+    loadImage: function() {
+      imageUpload.click()
     },
     algorithm: 'Simulated annealing',
     style: 'Regular polygons',
-    min_sides: 4,
-    max_sides: 4,
-    min_radius: 30,
-    max_radius: 50,
+    minSides: 4,
+    maxSides: 4,
+    minRadius: 30,
+    maxRadius: 50,
     restriction: {
       enable: false,
       sides: 4,
       angle: 0
     },
-    load_texture: function() {
-      texture_upload.click();
+    loadTexture: function() {
+      textureUpload.click()
     },
     resize: false,
-    maintain_aspect_ratio: true,
-    width: 512,
-    height: 512,
+    maintainAspectRatio: true,
+    maxWidth: 512,
+    maxHeight: 512,
     overdraw: false,
-    shape_count: 500,
+    shapeCount: 500,
     speed: 1,
     generate: function() {
-      hide_gui_element(gui, 'generate', true);
-      hide_gui_element(gui, 'clear', true);
-      hide_gui_element(gui, 'stop', false);
+      hide_gui_element(gui, 'generate', true)
+      hide_gui_element(gui, 'clear', true)
+      hide_gui_element(gui, 'stop', false)
 
-      generating = true;
+      generating = true
 
-      var best_canvas = document.createElement('canvas');
-      best_canvas.width = canvas.width;
-      best_canvas.height = canvas.height;
-      var best_ctx = best_canvas.getContext('2d');
+      let generations = 0
+      let evolutions = 0
 
-      var generations = 0;
-      var evolutions = 0;
-
-      shape_factory = new {
+      shapeFactory = new {
         Polygons: PolygonFactory,
         'Regular polygons': RegularPolygonFactory,
         Textures: TextureFactory
-      }[genetic_input.style](canvas.width, canvas.height, genetic_input, texture_canvas);
+      }[options.style](canvas.width, canvas.height, options, textureCanvas)
 
-      hide_gui_element(gui, 'download_svg', !shape_factory.svg);
+      hide_gui_element(gui, 'downloadSvg', !shapeFactory.svg)
 
-      var shape_n = genetic_input.shape_count;
+      const { shapeCount, overdraw } = options
 
-      var overdraw = genetic_input.overdraw;
+      shapes = []
 
-      shapes = [];
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       if (!overdraw) {
-        for (var i = 0; i < shape_n; i++) {
-          var shape = shape_factory.generate();
-          shapes.push(shape);
-          shape_factory.draw(best_ctx, shape);
+        for (let i = 0; i < shapeCount; i++) {
+          const shape = shapeFactory.generate()
+          shapes.push(shape)
         }
       }
 
-      var best_score = get_score(img_data, best_ctx.getImageData(0, 0, canvas.width, canvas.height));
+      let bestScore = Infinity
+      let generationTag = document.getElementById('generation')
 
-      var generation_tag = document.getElementById('generation');
-
-      var accept_new_state_algorithms = {
-        'Simulated annealing': function(score, best_score, generation) {
-          if (score <= best_score) {
-            return true;
+      const acceptNewStateAlgorithms = {
+        'Simulated annealing': function(score, bestScore, generation) {
+          if (score <= bestScore) {
+            return true
           } else {
-            var temperature = 10000 / Math.log(generation + 1);
-            return Math.exp(-(score - best_score) / temperature) >= Math.random();
+            const temperature = 10000 / Math.log(generation + 1)
+            return Math.exp(-(score - bestScore) / temperature) >= Math.random()
           }
         },
-        'Hill climbing': function(score, best_score, generation) {
-          return score <= best_score;
+        'Hill climbing': function(score, bestScore, generation) {
+          return score <= bestScore
         }
-      };
+      }
 
-      var tmp_canvas = document.createElement('canvas');
-      tmp_canvas.width = canvas.width;
-      tmp_canvas.height = canvas.height;
-      var tmp_ctx = tmp_canvas.getContext('2d');
+      const tmpCanvas = document.createElement('canvas')
+      tmpCanvas.width = canvas.width
+      tmpCanvas.height = canvas.height
+      const tmpCtx = tmpCanvas.getContext('2d')
 
-      var step = function() {
+      function step() {
         if (!generating) {
-          generating = false;
+          generating = false
 
-          hide_gui_element(gui, 'generate', false);
-          hide_gui_element(gui, 'clear', false);
-          hide_gui_element(gui, 'stop', true);
+          hide_gui_element(gui, 'generate', false)
+          hide_gui_element(gui, 'clear', false)
+          hide_gui_element(gui, 'stop', true)
 
-          return;
+          return
         }
 
-        for (var j = 0; j < genetic_input.speed; j++) {
-          generations++;
+        for (let j = 0; j < options.speed; j++) {
+          generations++
 
-          tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
+          tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height)
 
+          let oldShapes
           if (!overdraw) {
-            var old_shapes = shapes.slice();
-            var steps = -Math.log(1 - Math.random()) / 2 + 1;
-            for (var k = 0; k < steps; k++) {
-              var random_i = Math.floor(Math.random() * shape_n);
-              var r = Math.random();
+            oldShapes = shapes.slice()
+            const steps = -Math.log(1 - Math.random()) / 2 + 1
+            for (let k = 0; k < steps; k++) {
+              const r = Math.random()
+              const r1 = Math.floor(Math.random() * shapeCount)
               if (r < 0.7) {
-                shapes[random_i] = shape_factory.tweak(shapes[random_i]);
+                shapes[r1] = shapeFactory.tweak(shapes[r1])
               } else if (r < 0.8) {
-                var random_j = Math.floor(Math.random() * shape_n);
-                var tmp = shapes[random_i];
-                shapes[random_i] = shapes[random_j];
-                shapes[random_j] = tmp;
+                const r2 = Math.floor(Math.random() * shapeCount)
+                ;[shapes[r1], shapes[r2]] = [shapes[r2], shapes[r1]]
               } else {
-                shapes[random_i] = shape_factory.generate();
+                shapes[r1] = shapeFactory.generate()
               }
             }
 
-            for (var i = 0; i < shape_n; i++) {
-              shape_factory.draw(tmp_ctx, shapes[i]);
+            for (let i = 0; i < shapeCount; i++) {
+              shapeFactory.draw(tmpCtx, shapes[i])
             }
           } else {
-            tmp_ctx.drawImage(canvas, 0, 0);
-            var shape = shape_factory.generate();
-            shape_factory.draw(tmp_ctx, shape);
+            tmpCtx.drawImage(canvas, 0, 0)
+            const shape = shapeFactory.generate()
+            shapeFactory.draw(tmpCtx, shape)
           }
 
-          var tmp_img_data = tmp_ctx.getImageData(0, 0, canvas.width, canvas.height);
-          var score = get_score(img_data, tmp_img_data);
+          const tmpImgData = tmpCtx.getImageData(0, 0, canvas.width, canvas.height)
+          const score = getScore(imgData, tmpImgData)
 
-          if (accept_new_state_algorithms[genetic_input.algorithm](score, best_score, generations)) {
-            best_score = score;
-            ctx.putImageData(tmp_img_data, 0, 0);
+          if (acceptNewStateAlgorithms[options.algorithm](score, bestScore, generations)) {
+            bestScore = score
+            ctx.putImageData(tmpImgData, 0, 0)
             evolutions++
           } else if (!overdraw) {
-            shapes = old_shapes;
+            shapes = oldShapes
           }
         }
 
-        generation_tag.innerHTML = "Generations: " + generations + "<br>" +
-                                   "Evolutions: " + evolutions + "<br>" +
-                                   "Score: " + best_score;
+        generationTag.innerHTML = `Generations: ${generations}<br>Evolutions: ${evolutions}<br>Score: ${bestScore}`
 
-        requestAnimationFrame(step);
-      };
+        requestAnimationFrame(step)
+      }
 
-      requestAnimationFrame(step);
+      requestAnimationFrame(step)
     },
     clear: function() {
-      hide_gui_element(gui, 'clear', true);
-      hide_gui_element(gui, 'download_svg', true);
+      hide_gui_element(gui, 'clear', true)
+      hide_gui_element(gui, 'downloadSvg', true)
 
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
     },
     stop: function() {
-      generating = false;
+      generating = false
 
-      hide_gui_element(gui, 'generate', false);
-      hide_gui_element(gui, 'clear', false);
-      hide_gui_element(gui, 'stop', true);
+      hide_gui_element(gui, 'generate', false)
+      hide_gui_element(gui, 'clear', false)
+      hide_gui_element(gui, 'stop', true)
     },
-    download_svg: function() {
-      var header = shape_factory.svg_header ? shape_factory.svg_header() : '';
-      var svg_elements = [];
-      for (var i = 0; i < shapes.length; i++) {
-        svg_elements.push(shape_factory.svg(shapes[i]));
-      }
-      var data = [
+    downloadSvg: function() {
+      const svgElements = shapes.map(shape => shapeFactory.svg(shape))
+      const data = [
         '<?xml version="1.0" encoding="UTF-8" ?>',
         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" ' +
-        'width="' + canvas.width + '" height="' + canvas.height + '" ' +
-        'viewBox="0 0 ' + canvas.width + ' ' + canvas.height + '">'
-      ].concat(header, svg_elements, '</svg>').join('\n');
-      download(filename.replace(/\.[^.]+$/, '') + '.svg', 'data:image/svg+xml,' + encodeURIComponent(data));
+        `width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">`
+      ].concat(svgElements, '</svg>').join('\n')
+      download(filename.replace(/\.[^.]+$/, '') + '.svg', 'data:image/svg+xml,' + encodeURIComponent(data))
     }
-  };
-  var gui = new dat.GUI();
-  gui.add(genetic_input, 'load_image').name('Load image');
-  gui.add(genetic_input, 'algorithm', ['Simulated annealing', 'Hill climbing']).name('Algorithm');
-  gui.add(genetic_input, 'style', ['Polygons', 'Regular polygons', 'Textures']).name('Style').onChange(function(value) {
-    hide_gui_folder(gui, 'Radius', value !== 'Regular polygons' && value !== 'Textures');
-    hide_gui_folder(gui, 'Shape restriction', value !== 'Polygons');
-    hide_gui_folder(gui, 'Sides', value === 'Textures');
-    hide_gui_element(gui, 'load_texture', value !== 'Textures');
-  });
+  }
+  const gui = new dat.GUI()
+  gui.add(options, 'loadImage').name('Load image')
+  gui.add(options, 'algorithm', ['Simulated annealing', 'Hill climbing']).name('Algorithm')
+  gui.add(options, 'style', ['Polygons', 'Regular polygons', 'Textures']).name('Style').onChange(function(value) {
+    hide_gui_folder(gui, 'Radius', value !== 'Regular polygons' && value !== 'Textures')
+    hide_gui_folder(gui, 'Shape restriction', value !== 'Polygons')
+    hide_gui_folder(gui, 'Sides', value === 'Textures')
+    hide_gui_element(gui, 'loadTexture', value !== 'Textures')
+  })
 
-  var sides_folder = gui.addFolder('Sides');
-  sides_folder.add(genetic_input, 'min_sides', 2, 50, 1).name('Min sides').onChange(function(value) {
-    genetic_input.max_sides = Math.max(genetic_input.min_sides, genetic_input.max_sides);
-    update_gui(sides_folder);
-  });
-  sides_folder.add(genetic_input, 'max_sides', 2, 50, 1).name('Max sides').onChange(function(value) {
-    genetic_input.min_sides = Math.min(genetic_input.min_sides, genetic_input.max_sides);
-    update_gui(sides_folder);
-  });
+  const sidesFolder = gui.addFolder('Sides')
+  sidesFolder.add(options, 'minSides', 2, 50, 1).name('Min sides').onChange(function(value) {
+    options.maxSides = Math.max(options.minSides, options.maxSides)
+    update_gui(sidesFolder)
+  })
+  sidesFolder.add(options, 'maxSides', 2, 50, 1).name('Max sides').onChange(function(value) {
+    options.minSides = Math.min(options.minSides, options.maxSides)
+    update_gui(sidesFolder)
+  })
 
-  var radius_folder = gui.addFolder('Radius');
-  radius_folder.add(genetic_input, 'min_radius', 5, 100).name('Min radius').onChange(function(value) {
-    genetic_input.max_radius = Math.max(genetic_input.min_radius, genetic_input.max_radius);
-    update_gui(radius_folder);
-  });
-  radius_folder.add(genetic_input, 'max_radius', 5, 100).name('Max radius').onChange(function(value) {
-    genetic_input.min_radius = Math.min(genetic_input.min_radius, genetic_input.max_radius);
-    update_gui(radius_folder);
-  });
+  const radiusFolder = gui.addFolder('Radius')
+  radiusFolder.add(options, 'minRadius', 5, 100).name('Min radius').onChange(function(value) {
+    options.maxRadius = Math.max(options.minRadius, options.maxRadius)
+    update_gui(radiusFolder)
+  })
+  radiusFolder.add(options, 'maxRadius', 5, 100).name('Max radius').onChange(function(value) {
+    options.minRadius = Math.min(options.minRadius, options.maxRadius)
+    update_gui(radiusFolder)
+  })
 
-  var shape_restriction_folder = gui.addFolder('Shape restriction');
-  shape_restriction_folder.add(genetic_input.restriction, 'enable').name('Restrict').onChange(function(value) {
-    hide_gui_element(shape_restriction_folder, 'sides', !value);
-    hide_gui_element(shape_restriction_folder, 'angle', !value);
-  });
-  shape_restriction_folder.add(genetic_input.restriction, 'sides', 3, 50, 1).name('Sides');
-  shape_restriction_folder.add(genetic_input.restriction, 'angle', 0, 2 * Math.PI).name('Angle');
+  const shapeRestrictionFolder = gui.addFolder('Shape restriction')
+  shapeRestrictionFolder.add(options.restriction, 'enable').name('Restrict').onChange(function(value) {
+    hide_gui_element(shapeRestrictionFolder, 'sides', !value)
+    hide_gui_element(shapeRestrictionFolder, 'angle', !value)
+  })
+  shapeRestrictionFolder.add(options.restriction, 'sides', 3, 50, 1).name('Sides')
+  shapeRestrictionFolder.add(options.restriction, 'angle', 0, 2 * Math.PI).name('Angle')
 
-  gui.add(genetic_input, 'load_texture').name('Load texture');
+  gui.add(options, 'loadTexture').name('Load texture')
 
-  gui.add(genetic_input, 'resize').name('Resize').onChange(function(value) {
-    hide_gui_element(gui, 'maintain_aspect_ratio', !value);
-    hide_gui_element(gui, 'width', !value);
-    hide_gui_element(gui, 'height', !value);
-  });
-  gui.add(genetic_input, 'maintain_aspect_ratio').name('Maintain aspect ratio');
-  gui.add(genetic_input, 'width', 64, 1024, 1).name('Width');
-  gui.add(genetic_input, 'height', 64, 1024, 1).name('Height');
+  gui.add(options, 'resize').name('Resize').onChange(function(value) {
+    hide_gui_element(gui, 'maintainAspectRatio', !value)
+    hide_gui_element(gui, 'maxWidth', !value)
+    hide_gui_element(gui, 'maxHeight', !value)
+  })
+  gui.add(options, 'maintainAspectRatio').name('Maintain aspect ratio')
+  gui.add(options, 'maxWidth', 64, 1024, 1).name('Max width')
+  gui.add(options, 'maxHeight', 64, 1024, 1).name('Max height')
 
-  gui.add(genetic_input, 'overdraw').name('Overdraw').onChange(function(value) {
-    hide_gui_element(gui, 'shape_count', value);
-  });
-  gui.add(genetic_input, 'shape_count', 1, 5000).name('Shape count');
-  gui.add(genetic_input, 'speed', 1, 25, 1).name('Speed');
-  gui.add(genetic_input, 'generate').name('Generate');
-  gui.add(genetic_input, 'clear').name('Clear');
-  gui.add(genetic_input, 'stop').name('Stop');
-  gui.add(genetic_input, 'download_svg').name('Download SVG');
+  gui.add(options, 'overdraw').name('Overdraw').onChange(function(value) {
+    hide_gui_element(gui, 'shapeCount', value)
+  })
+  gui.add(options, 'shapeCount', 1, 5000).name('Shape count')
+  gui.add(options, 'speed', 1, 25, 1).name('Speed')
+  gui.add(options, 'generate').name('Generate')
+  gui.add(options, 'clear').name('Clear')
+  gui.add(options, 'stop').name('Stop')
+  gui.add(options, 'downloadSvg').name('Download SVG')
 
-  hide_gui_element(gui, 'load_texture', true);
-  hide_gui_element(gui, 'maintain_aspect_ratio', true);
-  hide_gui_element(gui, 'width', true);
-  hide_gui_element(gui, 'height', true);
-  hide_gui_element(gui, 'clear', true);
-  hide_gui_element(gui, 'stop', true);
-  hide_gui_element(gui, 'download_svg', true);
+  hide_gui_element(gui, 'loadTexture', true)
+  hide_gui_element(gui, 'maintainAspectRatio', true)
+  hide_gui_element(gui, 'maxWidth', true)
+  hide_gui_element(gui, 'maxHeight', true)
+  hide_gui_element(gui, 'clear', true)
+  hide_gui_element(gui, 'stop', true)
+  hide_gui_element(gui, 'downloadSvg', true)
 
-  hide_gui_element(shape_restriction_folder, 'sides', true);
-  hide_gui_element(shape_restriction_folder, 'angle', true);
+  hide_gui_element(shapeRestrictionFolder, 'sides', true)
+  hide_gui_element(shapeRestrictionFolder, 'angle', true)
 
-  hide_gui_folder(gui, 'Shape restriction', true);
+  hide_gui_folder(gui, 'Shape restriction', true)
 
-  var image_upload = document.getElementById('image_upload');
-  var texture_upload = document.getElementById('texture_upload');
+  const imageUpload = document.getElementById('imageUpload')
+  const textureUpload = document.getElementById('textureUpload')
 
-  var canvas = document.getElementById('canvas');
-  var ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('canvas')
+  const ctx = canvas.getContext('2d')
 
-  var texture_canvas = document.createElement('canvas');
+  const textureCanvas = document.createElement('canvas')
 
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  var generating = false;
+  let generating = false
 
-  var filename = 'default';
+  let filename = 'default'
 
-  image_upload.addEventListener('change', function(e) {
-    var reader = new FileReader();
+  imageUpload.addEventListener('change', function(e) {
+    const reader = new FileReader()
     reader.onload = function(event) {
-      var img = new Image();
-      img.src = event.target.result;
+      const img = new Image()
+      img.src = event.target.result
       img.onload = function() {
-        if (genetic_input.resize) {
-          if (genetic_input.maintain_aspect_ratio) {
-            var ratio = Math.min(genetic_input.width / img.width, genetic_input.height / img.height);
-            canvas.width = img.width * ratio;
-            canvas.height = img.height * ratio;
+        if (options.resize) {
+          if (options.maintainAspectRatio) {
+            const ratio = Math.min(options.maxWidth / img.width, options.maxHeight / img.height)
+            canvas.width = img.width * ratio
+            canvas.height = img.height * ratio
           } else {
-            canvas.width = genetic_input.width;
-            canvas.height = genetic_input.height;
+            canvas.width = options.maxWidth
+            canvas.height = options.maxHeight
           }
         } else {
-          canvas.width = img.width;
-          canvas.height = img.height;
+          canvas.width = img.width
+          canvas.height = img.height
         }
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        img_data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
       }
     }
-    reader.readAsDataURL(e.target.files[0]);
-    filename = e.target.files[0].name;
-  }, false);
+    const file = e.target.files[0]
+    reader.readAsDataURL(file)
+    filename = file.name
+  }, false)
 
-  texture_upload.addEventListener('change', function(e) {
-    var reader = new FileReader();
+  textureUpload.addEventListener('change', function(e) {
+    const reader = new FileReader()
     reader.onload = function(event) {
-      var img = new Image();
-      img.src = event.target.result;
+      const img = new Image()
+      img.src = event.target.result
       img.onload = function() {
-        texture_canvas.width = img.width;
-        texture_canvas.height = img.height;
-        texture_canvas.getContext('2d').drawImage(img, 0, 0);
+        textureCanvas.width = img.width
+        textureCanvas.height = img.height
+        textureCanvas.getContext('2d').drawImage(img, 0, 0)
       }
     }
-    reader.readAsDataURL(e.target.files[0]);
-  }, false);
-});
+    reader.readAsDataURL(e.target.files[0])
+  }, false)
+})
