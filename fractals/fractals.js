@@ -241,9 +241,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   canvas.addEventListener('wheel', function(e) {
     if (e.deltaY < 0) {
-      options.zoom *= 1.5;
+      options.zoom *= 1 - e.deltaY / 32;
     } else {
-      options.zoom /= 1.5;
+      options.zoom /= 1 + e.deltaY / 32;
     }
 
     draw();
