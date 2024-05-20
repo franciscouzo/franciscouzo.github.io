@@ -5,9 +5,9 @@
         <meta charset="utf-8">
         <link href="../font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <link href="../css/main.css" rel="stylesheet" type="text/css">
-        <script src="../js/dat.gui.min.js"></script>
         <script src="../js/utils.js"></script>
-        <script src="genetic_art.js"></script>
+        <script src="lil-gui.min.js"></script>
+        <script type="module" src="genetic_art.js"></script>
     </head>
     <body>
         <span id="top-left"><a href="/"><i class="fa fa-arrow-left"></i></a> <a href="/">Go back</a><br>
@@ -17,6 +17,7 @@
             <canvas id="canvas">Your browser doesn't supports canvas.</canvas>
         </center>
         <input type="file" id="imageUpload" accept="image/*" style="visibility: hidden">
+        <input type="file" id="priorityImageUpload" accept="image/*" style="visibility: hidden">
         <input type="file" id="textureUpload" accept="image/*" style="visibility: hidden">
     </body>
 </html>
