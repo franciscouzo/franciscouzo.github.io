@@ -33,6 +33,7 @@ const ishihara_input = {
   load_image() {
     document.getElementById('image_upload').click();
   },
+  text: '',
   circular: true,
   resize: true,
   edge_detection: true,
@@ -67,6 +68,7 @@ const ishihara_input = {
 
     generating = true;
 
+    if (ishihara_input.text) renderText();
     const img_data = img_ctx.getImageData(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = ishihara_input.background_color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -132,6 +134,67 @@ const ishihara_input = {
     download('ishihara.svg', `data:image/svg+xml,${encodeURIComponent(data)}`);
   }
 };
+
+function renderText() {
+  img_ctx.fillStyle = 'white';
+  img_ctx.fillRect(0, 0, img_canvas.width, img_canvas.height);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const text = ishihara_input.text;
+  if (!text) return;
+
+  const cw = img_canvas.width;
+  const ch = img_canvas.height;
+  const maxLineWidth = ishihara_input.circular
+    ? Math.min(cw, ch) * 0.75
+    : cw * 0.95;
+
+  const wrapText = (fontSize) => {
+    img_ctx.font = `bold ${fontSize}px sans-serif`;
+    const lines = [];
+    for (const paragraph of text.split('\n')) {
+      let currentLine = '';
+      for (const word of paragraph.split(' ')) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (currentLine && img_ctx.measureText(testLine).width > maxLineWidth) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      lines.push(currentLine);
+    }
+    return lines;
+  };
+
+  let lo = 1, hi = 4000;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    const lines = wrapText(mid);
+    const totalHeight = lines.length * mid * 1.2;
+    const maxW = Math.max(...lines.map(l => img_ctx.measureText(l).width));
+    const fits = ishihara_input.circular
+      ? Math.hypot(maxW, totalHeight) <= Math.min(cw, ch) * 0.9
+      : maxW <= cw * 0.95 && totalHeight <= ch * 0.9;
+    if (fits) lo = mid; else hi = mid;
+  }
+
+  const lines = wrapText(lo);
+  const lineHeight = lo * 1.2;
+  const firstLineY = ch / 2 - (lines.length - 1) * lineHeight / 2;
+
+  img_ctx.font = `bold ${lo}px sans-serif`;
+  img_ctx.fillStyle = 'black';
+  img_ctx.textAlign = 'center';
+  img_ctx.textBaseline = 'middle';
+  for (let i = 0; i < lines.length; i++) {
+    img_ctx.fillText(lines[i], cw / 2, firstLineY + i * lineHeight);
+  }
+
+  ctx.drawImage(img_canvas, 0, 0, canvas.width, canvas.height);
+}
 
 function set_colors_folders() {
   for (let i = 0; i < 6; i++) {
@@ -226,6 +289,7 @@ const gui = new dat.GUI({
 gui.remember(ishihara_input);
 
 gui.add(ishihara_input, 'load_image').name('Load image');
+gui.add(ishihara_input, 'text').name('Text').onChange(() => renderText());
 gui.add(ishihara_input, 'circular').name('Circular');
 gui.add(ishihara_input, 'resize').name('Resize');
 gui.add(ishihara_input, 'edge_detection').name('Edge detection');
