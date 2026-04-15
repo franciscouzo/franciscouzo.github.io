@@ -1,235 +1,280 @@
-function CircleFactory(options) {
-  this.options = options;
-}
-
-CircleFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(this.options.width, this.options.height) * 0.48 - radius);
-    var x = this.options.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = this.options.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (this.options.width  - radius * 2);
-    var y = radius + Math.random() * (this.options.height - radius * 2);
+class Polygon {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.points = [];
   }
 
-  return [{x: x, y: y, radius: radius}];
-};
+  addPoint(p) {
+    this.points.push(p);
+  }
 
-CircleFactory.prototype.overlaps_image = function(img_data, circle) {
-  var total_points = 0;
-  var points_overlapping = 0;
+  rotate(rads) {
+    const cos = Math.cos(rads);
+    const sin = Math.sin(rads);
+    for (const p of this.points) {
+      const { x, y } = p;
+      p.x = cos * x - sin * y;
+      p.y = sin * x + cos * y;
+    }
+  }
+}
 
-  for (var i = 0; i <= circle.radius; i++) {
-    for (var radius = 0; radius <= circle.radius; radius++) {
-      total_points++;
+function segmentsIntersect(ax, ay, bx, by, cx, cy, dx, dy) {
+  const d1x = bx - ax, d1y = by - ay;
+  const d2x = dx - cx, d2y = dy - cy;
+  const denom = d1x * d2y - d1y * d2x;
+  if (denom === 0) return false;
+  const t = ((cx - ax) * d2y - (cy - ay) * d2x) / denom;
+  const u = ((cx - ax) * d1y - (cy - ay) * d1x) / denom;
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+}
 
-      var x = circle.x + Math.cos(i * Math.PI * 2) * radius;
-      var y = circle.y + Math.sin(i * Math.PI * 2) * radius;
+function pointInPolygon(px, py, pts) {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    if ((pts[i].y > py !== pts[j].y > py) &&
+        px < (pts[j].x - pts[i].x) * (py - pts[i].y) / (pts[j].y - pts[i].y) + pts[i].x) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
 
-      var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
+function polygonsIntersect(p1, p2) {
+  const pts1 = p1.points.map(p => ({ x: p.x + p1.x, y: p.y + p1.y }));
+  const pts2 = p2.points.map(p => ({ x: p.x + p2.x, y: p.y + p2.y }));
+  const n1 = pts1.length, n2 = pts2.length;
 
-      var r = img_data.data[index];
-      var g = img_data.data[index + 1];
-      var b = img_data.data[index + 2];
-      var a = img_data.data[index + 3];
+  for (let i = 0; i < n1; i++) {
+    const a = pts1[i], b = pts1[(i + 1) % n1];
+    for (let j = 0; j < n2; j++) {
+      const c = pts2[j], d = pts2[(j + 1) % n2];
+      if (segmentsIntersect(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)) return true;
+    }
+  }
+
+  if (pointInPolygon(pts1[0].x, pts1[0].y, pts2)) return true;
+  if (pointInPolygon(pts2[0].x, pts2[0].y, pts1)) return true;
+
+  return false;
+}
+
+export class CircleFactory {
+  constructor(options) {
+    this.options = options;
+  }
+
+  generate(circular_area) {
+    const { min_radius, max_radius, width, height } = this.options;
+    const radius = min_radius + Math.random() * (max_radius - min_radius);
+    let x, y;
+
+    if (circular_area) {
+      const angle = Math.random() * 2 * Math.PI;
+      const distance_from_center = Math.sqrt(Math.random()) * (Math.min(width, height) * 0.48 - radius);
+      x = width  * 0.5 + Math.cos(angle) * distance_from_center;
+      y = height * 0.5 + Math.sin(angle) * distance_from_center;
+    } else {
+      x = radius + Math.random() * (width  - radius * 2);
+      y = radius + Math.random() * (height - radius * 2);
+    }
+
+    return [{ x, y, radius }];
+  }
+
+  overlaps_image(img_data, circle) {
+    let total_points = 0;
+    let points_overlapping = 0;
+
+    for (let i = 0; i <= circle.radius; i++) {
+      for (let radius = 0; radius <= circle.radius; radius++) {
+        total_points++;
+
+        const x = circle.x + Math.cos(i * Math.PI * 2) * radius;
+        const y = circle.y + Math.sin(i * Math.PI * 2) * radius;
+
+        const index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
+        const r = img_data.data[index];
+        const g = img_data.data[index + 1];
+        const b = img_data.data[index + 2];
+        const a = img_data.data[index + 3];
+
+        if ((r + g + b) * (a / 255) < 127) {
+          points_overlapping++;
+        }
+      }
+    }
+
+    return [total_points, points_overlapping];
+  }
+
+  intersects(circle1, circle2) {
+    return (circle2.x - circle1.x) ** 2 + (circle2.y - circle1.y) ** 2 <
+           (circle1.radius + circle2.radius) ** 2;
+  }
+
+  draw(ctx, circle) {
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius * this.options.draw_ratio, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  svg(circle, style) {
+    return `<circle cx="${circle.x}" cy="${circle.y}" r="${circle.radius * this.options.draw_ratio}" fill="${style}" />`;
+  }
+}
+
+export class RegularPolygonFactory {
+  constructor(options) {
+    this.options = options;
+  }
+
+  generate(circular_area) {
+    const { min_radius, max_radius, width, height, sides } = this.options;
+    const radius = min_radius + Math.random() * (max_radius - min_radius);
+    let x, y;
+
+    if (circular_area) {
+      const angle = Math.random() * 2 * Math.PI;
+      const distance_from_center = Math.sqrt(Math.random()) * (Math.min(width, height) * 0.48 - radius);
+      x = width  * 0.5 + Math.cos(angle) * distance_from_center;
+      y = height * 0.5 + Math.sin(angle) * distance_from_center;
+    } else {
+      x = radius + Math.random() * (width  - radius * 2);
+      y = radius + Math.random() * (height - radius * 2);
+    }
+
+    const polygon = new Polygon(x, y);
+    for (let i = 0; i < sides; i++) {
+      polygon.addPoint({
+        x: Math.cos(Math.PI * 2 * (i / sides)) * radius,
+        y: Math.sin(Math.PI * 2 * (i / sides)) * radius,
+      });
+    }
+    polygon.rotate(Math.random() * 2 * Math.PI);
+    polygon.radius = radius;
+
+    return [polygon];
+  }
+
+  overlaps_image(img_data, polygon) {
+    const points = [{ x: polygon.x, y: polygon.y }];
+    for (const p of polygon.points) {
+      points.push({ x: polygon.x + p.x, y: polygon.y + p.y });
+    }
+    let points_overlapping = 0;
+
+    for (const { x, y } of points) {
+      const index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
+      const r = img_data.data[index];
+      const g = img_data.data[index + 1];
+      const b = img_data.data[index + 2];
+      const a = img_data.data[index + 3];
 
       if ((r + g + b) * (a / 255) < 127) {
         points_overlapping++;
       }
     }
+
+    return [points.length, points_overlapping];
   }
 
-  return [total_points, points_overlapping];
-};
-
-CircleFactory.prototype.intersects = function(circle1, circle2) {
-  return Math.pow(circle2.x - circle1.x, 2) +
-         Math.pow(circle2.y - circle1.y, 2) <
-         Math.pow(circle1.radius + circle2.radius, 2);
-};
-
-CircleFactory.prototype.draw = function(ctx, circle) {
-  ctx.beginPath();
-  ctx.arc(circle.x, circle.y, circle.radius * this.options.draw_ratio, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.closePath();
-};
-
-CircleFactory.prototype.svg = function(circle, style) {
-  return '<circle cx="' + circle.x + '" cy="' + circle.y + '" ' +
-         'r="' + circle.radius * this.options.draw_ratio + '" fill="' + style + '" />';
-};
-
-function RegularPolygonFactory(options) {
-  this.options = options;
-}
-
-RegularPolygonFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
-
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(this.options.width, this.options.height) * 0.48 - radius);
-    var x = this.options.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = this.options.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (this.options.width  - radius * 2);
-    var y = radius + Math.random() * (this.options.height - radius * 2);
+  intersects(polygon1, polygon2) {
+    return polygonsIntersect(polygon1, polygon2);
   }
 
-  var polygon = new Polygon(x, y);
-  for (var i = 0; i < this.options.sides; i++) {
-    polygon.addPoint({
-      x: Math.cos(Math.PI * 2 * (i / this.options.sides)) * radius,
-      y: Math.sin(Math.PI * 2 * (i / this.options.sides)) * radius,
-    });
-  }
-  polygon.rotate(Math.random() * 2 * Math.PI);
-
-  return [polygon];
-};
-
-RegularPolygonFactory.prototype.overlaps_image = function(img_data, polygon) {
-  var points = [{x: polygon.x, y: polygon.y}];
-  for (var i = 0; i < polygon.points.length; i++) {
-    points.push({
-      x: polygon.x + polygon.points[i].x,
-      y: polygon.y + polygon.points[i].y,
-    });
-  }
-  var points_overlapping = 0;
-
-  for (var i = 0; i < points.length; i++) {
-    var x = points[i].x;
-    var y = points[i].y;
-
-    var index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
-
-    var r = img_data.data[index];
-    var g = img_data.data[index + 1];
-    var b = img_data.data[index + 2];
-    var a = img_data.data[index + 3];
-
-    if ((r + g + b) * (a / 255) < 127) {
-      points_overlapping++;
-    }
-  }
-  return [points.length, points_overlapping];
-};
-
-RegularPolygonFactory.prototype.intersects = function(polygon1, polygon2) {
-  return polygon1.intersectsWith(polygon2);
-};
-
-RegularPolygonFactory.prototype.draw = function(ctx, polygon) {
-  ctx.beginPath();
-  ctx.moveTo(
-    polygon.x + polygon.points[0].x * this.options.draw_ratio,
-    polygon.y + polygon.points[0].y * this.options.draw_ratio
-  );
-  for (var i = 1; i < polygon.points.length; i++) {
-    ctx.lineTo(
-      polygon.x + polygon.points[i].x * this.options.draw_ratio,
-      polygon.y + polygon.points[i].y * this.options.draw_ratio
+  draw(ctx, polygon) {
+    ctx.beginPath();
+    ctx.moveTo(
+      polygon.x + polygon.points[0].x * this.options.draw_ratio,
+      polygon.y + polygon.points[0].y * this.options.draw_ratio
     );
+    for (let i = 1; i < polygon.points.length; i++) {
+      ctx.lineTo(
+        polygon.x + polygon.points[i].x * this.options.draw_ratio,
+        polygon.y + polygon.points[i].y * this.options.draw_ratio
+      );
+    }
+    ctx.closePath();
+    ctx.fill();
   }
-  ctx.closePath();
-  ctx.fill();
-};
 
-RegularPolygonFactory.prototype.svg = function(polygon, style) {
-  var points = [];
-  for (var i = 0; i < polygon.points.length; i++) {
-    points.push(
-      (polygon.x + polygon.points[i].x * this.options.draw_ratio) + ',' +
-      (polygon.y + polygon.points[i].y * this.options.draw_ratio));
+  svg(polygon, style) {
+    const points = polygon.points.map(p =>
+      `${polygon.x + p.x * this.options.draw_ratio},${polygon.y + p.y * this.options.draw_ratio}`
+    );
+    return `<polygon points="${points.join(' ')}" fill="${style}" />`;
   }
-  return '<polygon points="' + points.join(' ') + '" fill="' + style + '" />';
-};
-
-function CrossFactory() {
-  RegularPolygonFactory.apply(this, arguments);
 }
 
-CrossFactory.prototype = Object.create(RegularPolygonFactory.prototype);
-CrossFactory.prototype.constructor = RegularPolygonFactory;
+export class CrossFactory extends RegularPolygonFactory {
+  generate(circular_area) {
+    const { min_radius, max_radius, width, height, pointiness } = this.options;
+    const radius = min_radius + Math.random() * (max_radius - min_radius);
+    let x, y;
 
-CrossFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
+    if (circular_area) {
+      const angle = Math.random() * 2 * Math.PI;
+      const distance_from_center = Math.sqrt(Math.random()) * (Math.min(width, height) * 0.48 - radius);
+      x = width  * 0.5 + Math.cos(angle) * distance_from_center;
+      y = height * 0.5 + Math.sin(angle) * distance_from_center;
+    } else {
+      x = radius + Math.random() * (width  - radius * 2);
+      y = radius + Math.random() * (height - radius * 2);
+    }
 
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(this.options.width, this.options.height) * 0.48 - radius);
-    var x = this.options.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = this.options.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (this.options.width  - radius * 2);
-    var y = radius + Math.random() * (this.options.height - radius * 2);
+    const arm = (1 - pointiness) * radius;
+    const polygon1 = new Polygon(x, y);
+    polygon1.addPoint({ x: -radius, y: -arm });
+    polygon1.addPoint({ x:  radius, y: -arm });
+    polygon1.addPoint({ x:  radius, y:  arm });
+    polygon1.addPoint({ x: -radius, y:  arm });
+
+    const polygon2 = new Polygon(x, y);
+    polygon2.addPoint({ x: -radius, y: -arm });
+    polygon2.addPoint({ x:  radius, y: -arm });
+    polygon2.addPoint({ x:  radius, y:  arm });
+    polygon2.addPoint({ x: -radius, y:  arm });
+
+    const rot = Math.random() * 2 * Math.PI;
+    polygon1.rotate(rot);
+    polygon2.rotate(rot + Math.PI / 2);
+    polygon1.radius = radius;
+    polygon2.radius = radius;
+
+    return [polygon1, polygon2];
   }
-
-  var polygon1 = new Polygon(x, y);
-  var polygon2 = new Polygon(x, y);
-
-  polygon1.addPoint({x: -radius, y: -(1 - this.options.pointiness) * radius})
-  polygon1.addPoint({x:  radius, y: -(1 - this.options.pointiness) * radius})
-  polygon1.addPoint({x:  radius, y:  (1 - this.options.pointiness) * radius})
-  polygon1.addPoint({x: -radius, y:  (1 - this.options.pointiness) * radius})
-
-  polygon2.addPoint({x: -radius, y: -(1 - this.options.pointiness) * radius})
-  polygon2.addPoint({x:  radius, y: -(1 - this.options.pointiness) * radius})
-  polygon2.addPoint({x:  radius, y:  (1 - this.options.pointiness) * radius})
-  polygon2.addPoint({x: -radius, y:  (1 - this.options.pointiness) * radius})
-
-  var rot = Math.random() * 2 * Math.PI;
-  polygon1.rotate(rot);
-  polygon2.rotate(rot + Math.PI / 2);
-
-  return [polygon1, polygon2];
-};
-
-function StarFactory() {
-  RegularPolygonFactory.apply(this, arguments);
 }
 
-StarFactory.prototype = Object.create(RegularPolygonFactory.prototype);
-StarFactory.prototype.constructor = RegularPolygonFactory;
+export class StarFactory extends RegularPolygonFactory {
+  generate(circular_area) {
+    const { min_radius, max_radius, width, height, sides, pointiness } = this.options;
+    const radius = min_radius + Math.random() * (max_radius - min_radius);
+    let x, y;
 
-StarFactory.prototype.generate = function(circular_area) {
-  var min_radius = this.options.min_radius;
-  var max_radius = this.options.max_radius;
-  var radius = min_radius + Math.random() * (max_radius - min_radius);
+    if (circular_area) {
+      const angle = Math.random() * 2 * Math.PI;
+      const distance_from_center = Math.sqrt(Math.random()) * (Math.min(width, height) * 0.48 - radius);
+      x = width  * 0.5 + Math.cos(angle) * distance_from_center;
+      y = height * 0.5 + Math.sin(angle) * distance_from_center;
+    } else {
+      x = radius + Math.random() * (width  - radius * 2);
+      y = radius + Math.random() * (height - radius * 2);
+    }
 
-  if (circular_area) {
-    var angle = Math.random() * 2 * Math.PI;
-    var distance_from_center = Math.random() * (Math.min(this.options.width, this.options.height) * 0.48 - radius);
-    var x = this.options.width  * 0.5 + Math.cos(angle) * distance_from_center;
-    var y = this.options.height * 0.5 + Math.sin(angle) * distance_from_center;
-  } else {
-    var x = radius + Math.random() * (this.options.width  - radius * 2);
-    var y = radius + Math.random() * (this.options.height - radius * 2);
+    const rot = Math.random() * 2 * Math.PI;
+    const arm = (1 - pointiness) * radius;
+
+    return Array.from({ length: sides }, (_, i) => {
+      const polygon = new Polygon(x, y);
+      polygon.addPoint({ x: -arm, y: 0 });
+      polygon.addPoint({ x:  arm, y: 0 });
+      polygon.addPoint({ x: 0,    y: radius });
+      polygon.rotate((i / sides) * Math.PI * 2 + rot);
+      polygon.radius = radius;
+      return polygon;
+    });
   }
-
-  var rot = Math.random() * 2 * Math.PI;
-  var polygons = [];
-
-  for (var i = 0; i < this.options.sides; i++) {
-    var polygon = new Polygon(x, y);
-    polygon.addPoint({x: -(1 - this.options.pointiness) * radius, y: 0});
-    polygon.addPoint({x:  (1 - this.options.pointiness) * radius, y: 0});
-    polygon.addPoint({x:  0,                                      y: radius});
-
-    polygon.rotate((i / this.options.sides) * Math.PI * 2 + rot);
-    polygons.push(polygon);
-  }
-
-  return polygons;
-};
+}
