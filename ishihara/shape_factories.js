@@ -248,6 +248,85 @@ export class CrossFactory extends RegularPolygonFactory {
   }
 }
 
+function cubicBezier1D(t, p0, p1, p2, p3) {
+  const mt = 1 - t;
+  return mt*mt*mt*p0 + 3*mt*mt*t*p1 + 3*mt*t*t*p2 + t*t*t*p3;
+}
+
+export class HeartFactory extends RegularPolygonFactory {
+  static _segments(r) {
+    return [
+      [0, r,       -r*0.75, r*0.5,  -r,      0,       -r,  -r*0.25],
+      [-r, -r*0.25, -r,    -r*0.75, -r*0.5, -r,        0,  -r*0.5 ],
+      [0,  -r*0.5,   r*0.5, -r,      r,     -r*0.75,   r,  -r*0.25],
+      [r,  -r*0.25,  r,     0,       r*0.75, r*0.5,    0,   r     ],
+    ];
+  }
+
+  generate(circular_area) {
+    const { min_radius, max_radius, width, height } = this.options;
+    const radius = min_radius + Math.random() * (max_radius - min_radius);
+    let x, y;
+
+    if (circular_area) {
+      const angle = Math.random() * 2 * Math.PI;
+      const distance_from_center = Math.sqrt(Math.random()) * (Math.min(width, height) * 0.48 - radius);
+      x = width  * 0.5 + Math.cos(angle) * distance_from_center;
+      y = height * 0.5 + Math.sin(angle) * distance_from_center;
+    } else {
+      x = radius + Math.random() * (width  - radius * 2);
+      y = radius + Math.random() * (height - radius * 2);
+    }
+
+    const rot = Math.random() * 2 * Math.PI;
+    const cos = Math.cos(rot), sin = Math.sin(rot);
+    const segs = HeartFactory._segments(radius);
+    const perSeg = 8;
+    const polygon = new Polygon(x, y);
+
+    for (const [x0,y0, x1,y1, x2,y2, x3,y3] of segs) {
+      for (let i = 0; i < perSeg; i++) {
+        const t = i / perSeg;
+        const hx = cubicBezier1D(t, x0, x1, x2, x3);
+        const hy = cubicBezier1D(t, y0, y1, y2, y3);
+        polygon.addPoint({ x: cos*hx - sin*hy, y: sin*hx + cos*hy });
+      }
+    }
+    polygon.rotation = rot;
+    polygon.radius = radius;
+
+    return [polygon];
+  }
+
+  draw(ctx, polygon) {
+    const r = polygon.radius * this.options.draw_ratio;
+    ctx.save();
+    ctx.translate(polygon.x, polygon.y);
+    ctx.rotate(polygon.rotation);
+    ctx.beginPath();
+    ctx.moveTo(0, r);
+    ctx.bezierCurveTo(-r*0.75,  r*0.5,  -r,      0,      -r, -r*0.25);
+    ctx.bezierCurveTo(-r,      -r*0.75, -r*0.5,  -r,       0, -r*0.5 );
+    ctx.bezierCurveTo( r*0.5,  -r,       r,      -r*0.75,  r, -r*0.25);
+    ctx.bezierCurveTo( r,       0,       r*0.75,  r*0.5,   0,  r     );
+    ctx.fill();
+    ctx.restore();
+  }
+
+  svg(polygon, style) {
+    const r = polygon.radius * this.options.draw_ratio;
+    const deg = polygon.rotation * 180 / Math.PI;
+    const d = [
+      `M0,${r}`,
+      `C${-r*0.75},${r*0.5} ${-r},0 ${-r},${-r*0.25}`,
+      `C${-r},${-r*0.75} ${-r*0.5},${-r} 0,${-r*0.5}`,
+      `C${r*0.5},${-r} ${r},${-r*0.75} ${r},${-r*0.25}`,
+      `C${r},0 ${r*0.75},${r*0.5} 0,${r}Z`,
+    ].join(' ');
+    return `<path d="${d}" transform="translate(${polygon.x},${polygon.y}) rotate(${deg})" fill="${style}" />`;
+  }
+}
+
 export class StarFactory extends RegularPolygonFactory {
   generate(circular_area) {
     const { min_radius, max_radius, width, height, sides, pointiness } = this.options;

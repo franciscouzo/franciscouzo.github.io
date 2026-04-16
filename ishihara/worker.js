@@ -1,4 +1,4 @@
-import { CircleFactory, RegularPolygonFactory, CrossFactory, StarFactory } from './shape_factories.js';
+import { CircleFactory, RegularPolygonFactory, CrossFactory, StarFactory, HeartFactory } from './shape_factories.js';
 
 class SpatialHash {
   constructor(cellSize, width, height) {
@@ -58,7 +58,8 @@ self.onmessage = function(e) {
     'Circle': CircleFactory,
     'Regular polygon': RegularPolygonFactory,
     'Cross': CrossFactory,
-    'Star': StarFactory
+    'Star': StarFactory,
+    'Heart': HeartFactory
   }[options.shape_factory];
 
   let current_radius = max_radius;

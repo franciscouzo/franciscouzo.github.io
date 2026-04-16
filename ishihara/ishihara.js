@@ -1,6 +1,6 @@
 'use strict';
 
-import { CircleFactory, RegularPolygonFactory, CrossFactory, StarFactory } from './shape_factories.js';
+import { CircleFactory, RegularPolygonFactory, CrossFactory, StarFactory, HeartFactory } from './shape_factories.js';
 
 const PIXEL_RATIO = window.devicePixelRatio || 1;
 
@@ -77,7 +77,8 @@ const ishihara_input = {
       'Circle': CircleFactory,
       'Regular polygon': RegularPolygonFactory,
       'Cross': CrossFactory,
-      'Star': StarFactory
+      'Star': StarFactory,
+      'Heart': HeartFactory
     }[ishihara_input.shape_factory];
     const shape_factory = new FactoryClass(JSON.parse(JSON.stringify(ishihara_input)));
 
@@ -295,7 +296,7 @@ gui.add(ishihara_input, 'resize').name('Resize');
 gui.add(ishihara_input, 'edge_detection').name('Edge detection');
 gui.add(ishihara_input, 'invert_colors').name('Invert colors');
 gui.addColor(ishihara_input, 'background_color').name('Background color');
-gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star']).onChange(value => {
+gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star', 'Heart']).onChange(value => {
   hide_gui_element(gui, 'sides', value !== 'Regular polygon' && value !== 'Star');
   hide_gui_element(gui, 'pointiness', value !== 'Cross' && value !== 'Star');
   ishihara_input.edge_detection = value === 'Circle';
