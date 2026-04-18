@@ -9,11 +9,12 @@ const ctx = canvas.getContext('2d');
 
 const max_width  = window.innerWidth  * PIXEL_RATIO;
 const max_height = window.innerHeight * PIXEL_RATIO;
+const max_size   = Math.min(max_width, max_height);
 
-ctx.canvas.style.width  = `${window.innerWidth}px`;
-ctx.canvas.style.height = `${window.innerHeight}px`;
-ctx.canvas.width  = max_width;
-ctx.canvas.height = max_height;
+ctx.canvas.style.width  = `${max_size / PIXEL_RATIO}px`;
+ctx.canvas.style.height = `${max_size / PIXEL_RATIO}px`;
+ctx.canvas.width  = max_size;
+ctx.canvas.height = max_size;
 
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -21,8 +22,8 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 const img_canvas = document.createElement('canvas');
 const img_ctx = img_canvas.getContext('2d');
 
-img_ctx.canvas.width  = max_width;
-img_ctx.canvas.height = max_height;
+img_ctx.canvas.width  = max_size;
+img_ctx.canvas.height = max_size;
 img_ctx.fillStyle = 'white';
 img_ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -119,6 +120,7 @@ const ishihara_input = {
 };
 
 function renderText() {
+  if (generating) return;
   img_ctx.fillStyle = 'white';
   img_ctx.fillRect(0, 0, img_canvas.width, img_canvas.height);
   ctx.fillStyle = 'white';
@@ -185,7 +187,24 @@ gui.add(ishihara_input, 'load_image').name('Load image');
 gui.add(ishihara_input, 'color_scheme', ['General 1', 'General 2', 'General 3', 'Protanopia', 'Protanomaly', 'Viewable by all', 'Colorblind only']).name('Color scheme');
 
 gui.add(ishihara_input, 'text').name('Text').onChange(() => renderText());
-gui.add(ishihara_input, 'circular').name('Circular');
+gui.add(ishihara_input, 'circular').name('Circular').onChange(value => {
+  const w = value ? max_size : max_width;
+  const h = value ? max_size : max_height;
+  canvas.width  = w;
+  canvas.height = h;
+  canvas.style.width  = `${w / PIXEL_RATIO}px`;
+  canvas.style.height = `${h / PIXEL_RATIO}px`;
+  img_canvas.width  = w;
+  img_canvas.height = h;
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, w, h);
+  img_ctx.fillStyle = 'white';
+  img_ctx.fillRect(0, 0, w, h);
+  ishihara_input.min_radius = (w + h) / 800;
+  ishihara_input.max_radius = (w + h) / 100;
+  update_gui(gui);
+  renderText();
+});
 gui.add(ishihara_input, 'resize').name('Resize');
 gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star', 'Heart']).onChange(value => {
   hide_gui_element(gui, 'sides', value !== 'Regular polygon' && value !== 'Star');
