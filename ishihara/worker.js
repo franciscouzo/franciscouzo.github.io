@@ -1,4 +1,35 @@
-import { CircleFactory, RegularPolygonFactory, CrossFactory, StarFactory, HeartFactory } from './shape_factories.js';
+import { CircleFactory, RegularPolygonFactory, CrossFactory, StarFactory, HeartFactory } from "./shape_factories.js";
+
+const COLOR_SCHEMES = {
+  "General 1": {
+    on: ["#F9BB82", "#EBA170", "#FCCD84"],
+    off: ["#9CA594", "#ACB4A5", "#BBB964", "#D7DAAA", "#E5D57D", "#D1D6AF"]
+  },
+  "General 2": {
+    on: ["#89B270", "#7AA45E", "#B6C674", "#7AA45E", "#B6C674"],
+    off: ["#F49427", "#C9785D", "#E88C6A", "#F1B081"]
+  },
+  "General 3": {
+    on: ["#89B270", "#7AA45E", "#B6C674", "#7AA45E", "#B6C674", "#FECB05"],
+    off: ["#F49427", "#C9785D", "#E88C6A", "#F1B081", "#FFCE00"]
+  },
+  Protanopia: {
+    on: ["#E96B6C", "#F7989C"],
+    off: ["#635A4A", "#817865", "#9C9C84"]
+  },
+  Protanomaly: {
+    on: ["#AD5277", "#F7989C"],
+    off: ["#635A4A", "#817865", "#9C9C84"]
+  },
+  "Viewable by all": {
+    on: ["#FF934F"],
+    off: ["#9C9C9C"]
+  },
+  "Colorblind only": {
+    on: ["#A8AA00", "#83BE28"],
+    off: ["#828200", "#669A1B", "#828200", "#669A1B", "#ED6311"]
+  }
+}
 
 class SpatialHash {
   constructor(cellSize, width, height) {
@@ -55,11 +86,11 @@ self.onmessage = function(e) {
   const { min_radius, max_radius, stop_after } = options;
 
   const FactoryClass = {
-    'Circle': CircleFactory,
-    'Regular polygon': RegularPolygonFactory,
-    'Cross': CrossFactory,
-    'Star': StarFactory,
-    'Heart': HeartFactory
+    "Circle": CircleFactory,
+    "Regular polygon": RegularPolygonFactory,
+    "Cross": CrossFactory,
+    "Star": StarFactory,
+    "Heart": HeartFactory
   }[options.shape_factory];
 
   let current_radius = max_radius;
@@ -111,15 +142,14 @@ self.onmessage = function(e) {
 
     tries = 0;
 
-    const style = overlaps_image !== options.invert_colors
-      ? options[`color_on${Math.floor(Math.random() * options.n_colors_on)}`]
-      : options[`color_off${Math.floor(Math.random() * options.n_colors_off)}`];
+    const colors = COLOR_SCHEMES[options.color_scheme][overlaps_image ? "on" : "off"];
+    const style = colors[Math.floor(Math.random() * colors.length)];
 
     for (const shape of shapes) {
-      postMessage({ action: 'shape', shape, style });
+      postMessage({ action: "shape", shape, style });
       hash.insert(shape);
     }
   }
 
-  postMessage({ action: 'stop' });
+  postMessage({ action: "stop" });
 };

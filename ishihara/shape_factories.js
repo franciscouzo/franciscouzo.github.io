@@ -116,13 +116,13 @@ export class CircleFactory {
 
   draw(ctx, circle) {
     ctx.beginPath();
-    ctx.arc(circle.x, circle.y, circle.radius * this.options.draw_ratio, 0, 2 * Math.PI);
+    ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
   }
 
   svg(circle, style) {
-    return `<circle cx="${circle.x}" cy="${circle.y}" r="${circle.radius * this.options.draw_ratio}" fill="${style}" />`;
+    return `<circle cx="${circle.x}" cy="${circle.y}" r="${circle.radius}" fill="${style}" />`;
   }
 }
 
@@ -187,15 +187,9 @@ export class RegularPolygonFactory {
 
   draw(ctx, polygon) {
     ctx.beginPath();
-    ctx.moveTo(
-      polygon.x + polygon.points[0].x * this.options.draw_ratio,
-      polygon.y + polygon.points[0].y * this.options.draw_ratio
-    );
+    ctx.moveTo(polygon.x + polygon.points[0].x, polygon.y + polygon.points[0].y);
     for (let i = 1; i < polygon.points.length; i++) {
-      ctx.lineTo(
-        polygon.x + polygon.points[i].x * this.options.draw_ratio,
-        polygon.y + polygon.points[i].y * this.options.draw_ratio
-      );
+      ctx.lineTo(polygon.x + polygon.points[i].x, polygon.y + polygon.points[i].y);
     }
     ctx.closePath();
     ctx.fill();
@@ -203,9 +197,9 @@ export class RegularPolygonFactory {
 
   svg(polygon, style) {
     const points = polygon.points.map(p =>
-      `${polygon.x + p.x * this.options.draw_ratio},${polygon.y + p.y * this.options.draw_ratio}`
+      `${polygon.x + p.x},${polygon.y + p.y}`
     );
-    return `<polygon points="${points.join(' ')}" fill="${style}" />`;
+    return `<polygon points="${points.join(" ")}" fill="${style}" />`;
   }
 }
 
@@ -299,7 +293,7 @@ export class HeartFactory extends RegularPolygonFactory {
   }
 
   draw(ctx, polygon) {
-    const r = polygon.radius * this.options.draw_ratio;
+    const r = polygon.radius;
     ctx.save();
     ctx.translate(polygon.x, polygon.y);
     ctx.rotate(polygon.rotation);
@@ -314,7 +308,7 @@ export class HeartFactory extends RegularPolygonFactory {
   }
 
   svg(polygon, style) {
-    const r = polygon.radius * this.options.draw_ratio;
+    const r = polygon.radius;
     const deg = polygon.rotation * 180 / Math.PI;
     const d = [
       `M0,${r}`,
@@ -322,7 +316,7 @@ export class HeartFactory extends RegularPolygonFactory {
       `C${-r},${-r*0.75} ${-r*0.5},${-r} 0,${-r*0.5}`,
       `C${r*0.5},${-r} ${r},${-r*0.75} ${r},${-r*0.25}`,
       `C${r},0 ${r*0.75},${r*0.5} 0,${r}Z`,
-    ].join(' ');
+    ].join(" ");
     return `<path d="${d}" transform="translate(${polygon.x},${polygon.y}) rotate(${deg})" fill="${style}" />`;
   }
 }
