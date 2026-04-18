@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
     maintainAspectRatio: true,
     maxWidth: 512,
     maxHeight: 512,
-    nonSelfIntersecting: false,
+    nonSelfIntersecting: true,
     overdraw: false,
     shapeCount: 500,
     generate: function () {
