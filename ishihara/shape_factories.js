@@ -160,25 +160,40 @@ export class RegularPolygonFactory {
   }
 
   overlaps_image(img_data, polygon) {
-    const points = [{ x: polygon.x, y: polygon.y }];
-    for (const p of polygon.points) {
-      points.push({ x: polygon.x + p.x, y: polygon.y + p.y });
+    const pts = polygon.points.map(p => ({ x: polygon.x + p.x, y: polygon.y + p.y }));
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of pts) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
     }
+
+    minX = Math.max(0, Math.floor(minX));
+    minY = Math.max(0, Math.floor(minY));
+    maxX = Math.min(img_data.width  - 1, Math.ceil(maxX));
+    maxY = Math.min(img_data.height - 1, Math.ceil(maxY));
+
+    let total_points = 0;
     let points_overlapping = 0;
 
-    for (const { x, y } of points) {
-      const index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
-      const r = img_data.data[index];
-      const g = img_data.data[index + 1];
-      const b = img_data.data[index + 2];
-      const a = img_data.data[index + 3];
-
-      if ((r + g + b) * (a / 255) < 127) {
-        points_overlapping++;
+    for (let py = minY; py <= maxY; py++) {
+      for (let px = minX; px <= maxX; px++) {
+        if (!pointInPolygon(px, py, pts)) continue;
+        total_points++;
+        const index = (py * img_data.width + px) * 4;
+        const r = img_data.data[index];
+        const g = img_data.data[index + 1];
+        const b = img_data.data[index + 2];
+        const a = img_data.data[index + 3];
+        if ((r + g + b) * (a / 255) < 127) {
+          points_overlapping++;
+        }
       }
     }
 
-    return [points.length, points_overlapping];
+    return [total_points, points_overlapping];
   }
 
   intersects(polygon1, polygon2) {

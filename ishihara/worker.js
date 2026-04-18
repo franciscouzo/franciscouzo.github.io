@@ -130,13 +130,8 @@ self.onmessage = function(e) {
       const [total_points, points_overlapping] = shape_factory.overlaps_image(options.img_data, shape);
 
       overlaps_image = points_overlapping !== 0;
-
-      if (options.edge_detection) {
-        if (overlaps_image && points_overlapping / total_points < 0.9) {
-          continue outer;
-        }
-      } else if (overlaps_image) {
-        break;
+      if (overlaps_image && points_overlapping / total_points < 0.9) {
+        continue outer;
       }
     }
 

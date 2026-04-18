@@ -36,7 +36,6 @@ const ishihara_input = {
   text: '',
   circular: true,
   resize: true,
-  edge_detection: true,
   color_scheme: 'General 1',
   min_radius: (canvas.width + canvas.height) / 800,
   max_radius: (canvas.width + canvas.height) / 100,
@@ -188,11 +187,9 @@ gui.add(ishihara_input, 'color_scheme', ['General 1', 'General 2', 'General 3', 
 gui.add(ishihara_input, 'text').name('Text').onChange(() => renderText());
 gui.add(ishihara_input, 'circular').name('Circular');
 gui.add(ishihara_input, 'resize').name('Resize');
-gui.add(ishihara_input, 'edge_detection').name('Edge detection');
 gui.add(ishihara_input, 'shape_factory', ['Circle', 'Regular polygon', 'Cross', 'Star', 'Heart']).onChange(value => {
   hide_gui_element(gui, 'sides', value !== 'Regular polygon' && value !== 'Star');
   hide_gui_element(gui, 'pointiness', value !== 'Cross' && value !== 'Star');
-  ishihara_input.edge_detection = value === 'Circle';
   update_gui(gui);
 }).name('Shape');
 gui.add(ishihara_input, 'sides', 3, 12, 1).name('Sides');
