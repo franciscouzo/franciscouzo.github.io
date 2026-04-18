@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
   gui.add(options, 'overdraw').name('Overdraw').onChange(function (value) {
     showController(gui, 'shapeCount', !value)
   })
-  gui.add(options, 'shapeCount', 1, 5000).name('Shape count')
+  gui.add(options, 'shapeCount', 1, 5000, 1).name('Shape count')
   gui.add(options, 'generate').name('Generate')
   gui.add(options, 'stop').name('Stop')
   gui.add(options, 'downloadSvg').name('Download SVG')
