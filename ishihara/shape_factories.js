@@ -87,7 +87,7 @@ export class CircleFactory {
     let total_points = 0;
     let points_overlapping = 0;
 
-    for (let i = 0; i <= circle.radius; i++) {
+    for (let i = 0; i <= Math.PI * 2; i += 0.05) {
       for (let radius = 0; radius <= circle.radius; radius++) {
         total_points++;
 

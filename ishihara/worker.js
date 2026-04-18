@@ -101,7 +101,7 @@ self.onmessage = function(e) {
       overlaps_image = points_overlapping !== 0;
 
       if (options.edge_detection) {
-        if (overlaps_image && points_overlapping !== total_points) {
+        if (overlaps_image && points_overlapping / total_points < 0.9) {
           continue outer;
         }
       } else if (overlaps_image) {
