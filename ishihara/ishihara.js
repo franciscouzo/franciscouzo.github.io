@@ -41,6 +41,7 @@ const ishihara_input = {
   min_radius: (canvas.width + canvas.height) / 800,
   max_radius: (canvas.width + canvas.height) / 100,
   stop_after: 10000,
+  overlap: 0.9,
   incremental_radius: true,
   shape_factory: 'Circle',
   sides: 4,
@@ -223,6 +224,7 @@ gui.add(ishihara_input, 'max_radius', 2, 50).name('Max radius').onChange(() => {
   update_gui(gui);
 });
 gui.add(ishihara_input, 'stop_after', 1000, 100000, 1).name('Stop after');
+gui.add(ishihara_input, 'overlap', 0, 1).name('Overlap');
 gui.add(ishihara_input, 'incremental_radius').name('Incremental radius');
 gui.add(ishihara_input, 'generate').name('Generate');
 gui.add(ishihara_input, 'clear').name('Clear');

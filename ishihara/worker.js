@@ -130,7 +130,7 @@ self.onmessage = function(e) {
       const [total_points, points_overlapping] = shape_factory.overlaps_image(options.img_data, shape);
 
       overlaps_image = points_overlapping !== 0;
-      if (overlaps_image && points_overlapping / total_points < 0.9) {
+      if (overlaps_image && points_overlapping / total_points < options.overlap) {
         continue outer;
       }
     }
