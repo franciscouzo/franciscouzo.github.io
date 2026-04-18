@@ -84,22 +84,25 @@ export class CircleFactory {
   }
 
   overlaps_image(img_data, circle) {
+    const minX = Math.max(0, Math.floor(circle.x - circle.radius));
+    const minY = Math.max(0, Math.floor(circle.y - circle.radius));
+    const maxX = Math.min(img_data.width  - 1, Math.ceil(circle.x + circle.radius));
+    const maxY = Math.min(img_data.height - 1, Math.ceil(circle.y + circle.radius));
+    const r2 = circle.radius * circle.radius;
+
     let total_points = 0;
     let points_overlapping = 0;
 
-    for (let i = 0; i <= Math.PI * 2; i += 0.05) {
-      for (let radius = 0; radius <= circle.radius; radius++) {
+    for (let py = minY; py <= maxY; py++) {
+      for (let px = minX; px <= maxX; px++) {
+        const dx = px - circle.x, dy = py - circle.y;
+        if (dx * dx + dy * dy > r2) continue;
         total_points++;
-
-        const x = circle.x + Math.cos(i * Math.PI * 2) * radius;
-        const y = circle.y + Math.sin(i * Math.PI * 2) * radius;
-
-        const index = (Math.floor(y) * img_data.width + Math.floor(x)) * 4;
+        const index = (py * img_data.width + px) * 4;
         const r = img_data.data[index];
         const g = img_data.data[index + 1];
         const b = img_data.data[index + 2];
         const a = img_data.data[index + 3];
-
         if ((r + g + b) * (a / 255) < 127) {
           points_overlapping++;
         }
