@@ -32,11 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
     maxSides: 4,
     minRadius: 30,
     maxRadius: 50,
-    restriction: {
-      enable: false,
-      sides: 4,
-      angle: 0
-    },
     loadTexture: function () {
       textureUpload.click()
     },
@@ -44,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
     maintainAspectRatio: true,
     maxWidth: 512,
     maxHeight: 512,
+    nonSelfIntersecting: false,
     overdraw: false,
     shapeCount: 500,
     generate: function () {
@@ -145,9 +141,9 @@ document.addEventListener('DOMContentLoaded', function () {
   gui.add(options, 'algorithm', ['Simulated annealing', 'Hill climbing']).name('Algorithm')
   gui.add(options, 'style', ['Polygons', 'Regular polygons', 'Textures']).name('Style').onChange(function (value) {
     showFolder(gui, 'Radius', value === 'Regular polygons' || value === 'Textures')
-    showFolder(gui, 'Shape restriction', value === 'Polygons')
     showFolder(gui, 'Sides', value !== 'Textures')
     showController(gui, 'loadTexture', value === 'Textures')
+    showController(gui, 'nonSelfIntersecting', value === 'Polygons')
   })
   gui.add(options, 'transparent').name('Transparent')
 
@@ -167,13 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
     options.minRadius = Math.min(options.minRadius, options.maxRadius)
   }).listen()
 
-  const shapeRestrictionFolder = gui.addFolder('Shape restriction').close()
-  shapeRestrictionFolder.add(options.restriction, 'enable').name('Restrict').onChange(function (value) {
-    showController(shapeRestrictionFolder, 'sides', value)
-    showController(shapeRestrictionFolder, 'angle', value)
-  })
-  shapeRestrictionFolder.add(options.restriction, 'sides', 3, 50, 1).name('Sides')
-  shapeRestrictionFolder.add(options.restriction, 'angle', 0, 2 * Math.PI).name('Angle')
+  gui.add(options, 'nonSelfIntersecting').name('Non-self-intersecting')
 
   gui.add(options, 'loadTexture').name('Load texture')
 
@@ -195,14 +185,11 @@ document.addEventListener('DOMContentLoaded', function () {
   gui.add(options, 'downloadSvg').name('Download SVG')
 
   showController(gui, 'loadTexture', false)
-  showController(shapeRestrictionFolder, 'sides', false)
-  showController(shapeRestrictionFolder, 'angle', false)
+  showController(gui, 'nonSelfIntersecting', false)
 
   enableController(gui, 'generate', false)
   enableController(gui, 'stop', false)
   enableController(gui, 'downloadSvg', false)
-
-  showFolder(gui, 'Shape restriction', false)
 
   const imageUpload = document.getElementById('imageUpload')
   const priorityImageUpload = document.getElementById('priorityImageUpload')

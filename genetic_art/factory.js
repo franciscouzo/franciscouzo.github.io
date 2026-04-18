@@ -16,6 +16,33 @@ function rgb2hex(red, green, blue) {
   return '#' + (0x1000000 + rgb).toString(16).slice(1)
 }
 
+function cross2d(o, a, b) {
+  return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+}
+
+function segmentsIntersect(p1, p2, p3, p4) {
+  const d1 = cross2d(p3, p4, p1)
+  const d2 = cross2d(p3, p4, p2)
+  const d3 = cross2d(p1, p2, p3)
+  const d4 = cross2d(p1, p2, p4)
+  return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+         ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+}
+
+function isSimplePolygon(points) {
+  const n = points.length
+  if (n < 4) return true
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 2; j < n; j++) {
+      if (i === 0 && j === n - 1) continue
+      if (segmentsIntersect(points[i], points[(i + 1) % n], points[j], points[(j + 1) % n])) {
+        return false
+      }
+    }
+  }
+  return true
+}
+
 export class PolygonFactory {
   constructor(width, height, options) {
     this.width = width
@@ -24,45 +51,39 @@ export class PolygonFactory {
   }
 
   generatePoint() {
-    if (this.options.restriction.enable) {
-      const sides = this.options.restriction.sides
-      const angle = this.options.restriction.angle
-      const radius = Math.min(this.width, this.height) / 2
-
-      const i1 = Math.floor(Math.random() * sides)
-      const i2 = (i1 + 1) % sides
-
-      const x1 = Math.cos(i1 / sides * 2 * Math.PI + angle) * radius + this.width / 2
-      const y1 = Math.sin(i1 / sides * 2 * Math.PI + angle) * radius + this.height / 2
-
-      const x2 = Math.cos(i2 / sides * 2 * Math.PI + angle) * radius + this.width / 2
-      const y2 = Math.sin(i2 / sides * 2 * Math.PI + angle) * radius + this.height / 2
-
-      const t = Math.random()
-      const x = (1 - t) * x1 + t * x2
-      const y = (1 - t) * y1 + t * y2
-
-      return [x, y]
-    } else {
-      return [random(0, this.width), random(0, this.height)]
-    }
+    return [random(0, this.width), random(0, this.height)]
   }
 
   tweakPoint(point) {
-    if (this.options.restriction.enable) {
-      return this.generatePoint()
-    } else {
-      return [clamp(point[0] + random(-this.width / 10, this.width / 10), 0, this.width),
-      clamp(point[1] + random(-this.height / 10, this.height / 10), 0, this.height)]
-    }
+    return [clamp(point[0] + random(-this.width / 10, this.width / 10), 0, this.width),
+    clamp(point[1] + random(-this.height / 10, this.height / 10), 0, this.height)]
   }
 
   generate() {
-    const points = []
     const sides = Math.floor(random(this.options.minSides, this.options.maxSides))
+    let points
 
-    for (let i = 0; i < sides; i++) {
-      points.push(this.generatePoint())
+    if (this.options.nonSelfIntersecting) {
+      points = [this.generatePoint(), this.generatePoint(), this.generatePoint()]
+      while (points.length < sides) {
+        let inserted = false
+        for (let attempt = 0; attempt < 100 && !inserted; attempt++) {
+          const edgeIdx = Math.floor(Math.random() * points.length)
+          const newPoint = this.generatePoint()
+          const candidate = points.slice()
+          candidate.splice(edgeIdx + 1, 0, newPoint)
+          if (isSimplePolygon(candidate)) {
+            points = candidate
+            inserted = true
+          }
+        }
+        if (!inserted) break
+      }
+    } else {
+      points = []
+      for (let i = 0; i < sides; i++) {
+        points.push(this.generatePoint())
+      }
     }
 
     return {
@@ -87,7 +108,22 @@ export class PolygonFactory {
       if (polygon.points.length > this.options.minSides && Math.random() < 0.1) {
         newPolygon.points.splice(i, 1)
       } else if (polygon.points.length < this.options.maxSides && Math.random() < 0.1) {
-        newPolygon.points.splice(i, 0, this.generatePoint())
+        if (this.options.nonSelfIntersecting) {
+          let inserted = false
+          for (let attempt = 0; attempt < 100 && !inserted; attempt++) {
+            const edgeIdx = Math.floor(Math.random() * polygon.points.length)
+            const newPoint = this.generatePoint()
+            const candidate = newPolygon.points.slice()
+            candidate.splice(edgeIdx + 1, 0, newPoint)
+            if (isSimplePolygon(candidate)) {
+              newPolygon.points = candidate
+              inserted = true
+            }
+          }
+          if (!inserted) return polygon
+        } else {
+          newPolygon.points.splice(i, 0, this.generatePoint())
+        }
       } else if (Math.random() < 0.5) {
         const j = Math.floor(Math.random() * polygon.points.length)
         newPolygon.points[i] = polygon.points[j]
@@ -95,6 +131,10 @@ export class PolygonFactory {
       } else {
         newPolygon.points[i] = this.tweakPoint(polygon.points[i])
       }
+    }
+
+    if (this.options.nonSelfIntersecting && !isSimplePolygon(newPolygon.points)) {
+      return polygon
     }
 
     return newPolygon
