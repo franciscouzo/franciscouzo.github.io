@@ -322,11 +322,14 @@ canvas.addEventListener('touchmove', e => {
 document.getElementById('image_upload').addEventListener('change', e => {
   ishihara_input.stop();
 
+  const file = e.target.files[0];
+  const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+
   const reader = new FileReader();
   reader.onload = event => {
     const img = new Image();
-    img.src = event.target.result;
-    img.onload = () => {
+
+    const applyImage = () => {
       if (ishihara_input.resize) {
         const ratio = Math.min(max_width / img.width, max_height / img.height);
         canvas.width  = img.width  * ratio;
@@ -339,12 +342,72 @@ document.getElementById('image_upload').addEventListener('change', e => {
       canvas.style.width  = `${canvas.width  / PIXEL_RATIO}px`;
       canvas.style.height = `${canvas.height / PIXEL_RATIO}px`;
 
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // When circular, shrink the image so its corners aren't clipped by the
+      // circular plate boundary. A square fits inside a circle of equal diameter
+      // only when its side is diameter * (1/√2) ≈ 0.707. We apply that scale
+      // and center the image so all four corners stay within the circle.
+      let drawW, drawH, drawX, drawY;
+      if (ishihara_input.circular) {
+        const scale = 1 / Math.sqrt(2);
+        drawW = canvas.width  * scale;
+        drawH = canvas.height * scale;
+        drawX = (canvas.width  - drawW) / 2;
+        drawY = (canvas.height - drawH) / 2;
+      } else {
+        drawW = canvas.width;
+        drawH = canvas.height;
+        drawX = 0;
+        drawY = 0;
+      }
+
+      // Fill white on display canvas before drawing
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
       img_canvas.width  = canvas.width;
       img_canvas.height = canvas.height;
-      img_ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Fill white on img_canvas before drawing — fixes transparent-background
+      // SVGs (e.g. icon files) where resizing the canvas clears it to rgba(0,0,0,0).
+      // Without this, every background pixel satisfies (r+g+b)*(a/255) < 127 and
+      // is incorrectly treated as "inside the shape", producing a uniform plate.
+      img_ctx.fillStyle = 'white';
+      img_ctx.fillRect(0, 0, img_canvas.width, img_canvas.height);
+      img_ctx.drawImage(img, drawX, drawY, drawW, drawH);
     };
+
+    if (isSvg) {
+      // For SVG files we must set explicit pixel dimensions on the Image before
+      // loading, otherwise img.width/img.height reflect only the SVG's declared
+      // CSS size (often 24px) rather than a useful raster size.
+      // We parse the SVG, force width/height to fill the screen, then load via
+      // an object URL so the browser rasterises it at the correct resolution.
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(event.target.result, 'image/svg+xml');
+      const svgEl  = svgDoc.documentElement;
+
+      svgEl.setAttribute('width',  max_size);
+      svgEl.setAttribute('height', max_size);
+
+      const serialized = new XMLSerializer().serializeToString(svgEl);
+      const blob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        applyImage();
+      };
+      img.src = url;
+    } else {
+      img.onload = applyImage;
+      img.src = event.target.result;
+    }
   };
-  reader.readAsDataURL(e.target.files[0]);
+
+  // SVG: read as text so we can manipulate the DOM; raster images: data URL
+  if (isSvg) {
+    reader.readAsText(file);
+  } else {
+    reader.readAsDataURL(file);
+  }
 }, false);
